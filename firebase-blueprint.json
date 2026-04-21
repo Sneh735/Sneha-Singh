@@ -1,0 +1,102 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and educational status",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "keySkills": { "type": "array", "items": { "type": "string" } },
+        "experience": { "type": "number" },
+        "education": { "type": "string" },
+        "bio": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "completedCourses": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Course": {
+      "title": "Course",
+      "description": "Educational content provided by the platform",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "domain": { "type": "string" },
+        "duration": { "type": "string" },
+        "points": { "type": "number" }
+      },
+      "required": ["id", "title", "domain"]
+    },
+    "Certificate": {
+      "title": "Certificate",
+      "description": "Digital credential issued upon course completion",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "courseId": { "type": "string" },
+        "courseTitle": { "type": "string" },
+        "issuedAt": { "type": "string", "format": "date-time" },
+        "certificateUrl": { "type": "string" }
+      },
+      "required": ["id", "userId", "courseId"]
+    },
+    "Job": {
+      "title": "Job",
+      "description": "Available job opportunities matched with skills",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "company": { "type": "string" },
+        "domain": { "type": "string" },
+        "requiredSkills": { "type": "array", "items": { "type": "string" } },
+        "minExperience": { "type": "number" },
+        "location": { "type": "string" }
+      },
+      "required": ["id", "title", "company", "domain"]
+    },
+    "Enrollment": {
+      "title": "Enrollment",
+      "description": "User enrollment in a specific course",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "courseId": { "type": "string" },
+        "progress": { "type": "number" },
+        "status": { "type": "string", "enum": ["enrolled", "in_progress", "completed"] },
+        "enrolledAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "courseId"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Private user profiles"
+    },
+    "/courses/{courseId}": {
+      "schema": "Course",
+      "description": "List of available courses"
+    },
+    "/enrollments/{enrollmentId}": {
+      "schema": "Enrollment",
+      "description": "User course enrollments"
+    },
+    "/certificates/{certId}": {
+      "schema": "Certificate",
+      "description": "Issued certificates log"
+    },
+    "/jobs/{jobId}": {
+      "schema": "Job",
+      "description": "Job database for matching"
+    }
+  }
+}

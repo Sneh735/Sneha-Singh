@@ -1,0 +1,34 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Syne", sans-serif;
+  
+  --color-brand-blue: #1a6ef5;
+  --color-brand-blue-dark: #0d4db5;
+  --color-brand-accent: #00d4aa;
+  --color-brand-ink: #0f1923;
+  --color-brand-muted: #6b7a8f;
+  --color-brand-cream: #f4f0e8;
+  --color-brand-border: #dde4ef;
+}
+
+@layer base {
+  body {
+    @apply bg-brand-cream text-brand-ink font-sans;
+  }
+  
+  h1, h2, h3, h4 {
+    @apply font-display;
+  }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.4); }
+}
+
+.animate-blink {
+  animation: blink 2s infinite;
+}
