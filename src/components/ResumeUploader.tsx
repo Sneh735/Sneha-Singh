@@ -52,25 +52,45 @@ export default function ResumeUploader({ onAnalysisComplete }: ResumeUploaderPro
   };
 
   return (
-    <div className="w-full max-w-xl mx-auto p-12 border border-slate-200 rounded-2xl bg-slate-50/50 flex flex-col items-center text-center space-y-6">
-      <div className="w-16 h-16 bg-blue-600 text-white rounded-2xl shadow-lg shadow-blue-200 flex items-center justify-center">
-        {isUploading ? <Loader2 className="w-8 h-8 animate-spin" /> : <Upload className="w-8 h-8" />}
-      </div>
-      <div>
-        <h3 className="text-2xl font-bold text-slate-900 tracking-tight">Sync your Resume</h3>
-        <p className="text-slate-500 mt-1 max-w-sm">We'll use AI to extract your skills and match you with open roles.</p>
+    <div className="w-full max-w-xl mx-auto flex flex-col items-center text-center space-y-8">
+      <div className={cn(
+        "w-full p-12 border-2 border-dashed rounded-[40px] transition-all duration-300 relative group",
+        isUploading ? "border-brand-blue bg-brand-blue/5" : "border-brand-border hover:border-brand-blue hover:bg-brand-blue/5"
+      )}>
+        <input 
+          type="file" 
+          className="absolute inset-0 opacity-0 cursor-pointer z-10" 
+          accept=".pdf" 
+          onChange={handleFileUpload} 
+          disabled={isUploading} 
+        />
+        
+        <div className="flex flex-col items-center space-y-6 relative z-0">
+          <div className={cn(
+            "w-20 h-20 rounded-3xl flex items-center justify-center transition-all duration-500 shadow-xl",
+            isUploading ? "bg-brand-blue text-white animate-pulse" : "bg-white text-brand-blue group-hover:scale-110"
+          )}>
+            {isUploading ? <Loader2 className="w-10 h-10 animate-spin" /> : <Upload className="w-10 h-10" />}
+          </div>
+          
+          <div className="space-y-2">
+            <h3 className="text-2xl font-display font-black text-brand-ink tracking-tight">Sync your Methodology</h3>
+            <p className="text-brand-muted text-sm font-medium max-w-[280px]">Drag your PDF resume here or click to browse your ecosystem.</p>
+          </div>
+
+          <div className="pt-4 flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-brand-muted">
+            <div className="flex items-center gap-1.5 px-3 py-1 bg-white rounded-full border border-brand-border/50">
+              <FileText className="w-3 h-3" /> PDF Support
+            </div>
+            <div className="flex items-center gap-1.5 px-3 py-1 bg-white rounded-full border border-brand-border/50">
+              <CheckCircle className="w-3 h-3" /> AI Verification
+            </div>
+          </div>
+        </div>
       </div>
       
-      <label className={cn(
-        "cursor-pointer px-8 py-3 bg-blue-600 text-white rounded-xl font-semibold shadow-sm hover:bg-blue-700 transition-all active:scale-95 inline-block",
-        isUploading && "pointer-events-none opacity-80"
-      )}>
-        {isUploading ? "Analyzing..." : "Upload PDF Resume"}
-        <input type="file" className="hidden" accept=".pdf" onChange={handleFileUpload} disabled={isUploading} />
-      </label>
-
       {error && (
-        <div className="flex items-center gap-2 text-red-500 text-sm font-medium">
+        <div className="flex items-center gap-2 p-4 bg-red-50 text-red-600 rounded-2xl text-xs font-black uppercase tracking-widest animate-shake">
           <AlertCircle className="w-4 h-4" />
           <span>{error}</span>
         </div>

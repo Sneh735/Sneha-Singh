@@ -7,11 +7,27 @@
   
   --color-brand-blue: #1a6ef5;
   --color-brand-blue-dark: #0d4db5;
+  --color-brand-blue-light: #e8f1ff;
   --color-brand-accent: #00d4aa;
   --color-brand-ink: #0f1923;
   --color-brand-muted: #6b7a8f;
   --color-brand-cream: #f4f0e8;
   --color-brand-border: #dde4ef;
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-xl;
+  }
+  .glass-dark {
+    @apply bg-brand-ink/40 backdrop-blur-xl border border-white/10 shadow-2xl;
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-brand-cream text-brand-ink;
+  }
 }
 
 @layer base {

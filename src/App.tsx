@@ -19,9 +19,15 @@ import {
   Github,
   Mail,
   Linkedin,
-  BookOpen
+  BookOpen,
+  Bell,
+  Settings,
+  ChevronRight,
+  CheckCircle,
+  Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import ResumeScoreChart from './components/ResumeScoreChart';
 
 const COURSES = [
   { id: '1', title: 'Introduction to HTML', description: 'Learn the foundational building blocks of the web and structure your first page.', domain: 'Web Dev', duration: '5h', points: 100 },
@@ -143,258 +149,306 @@ export default function App() {
 
   // Authenticated Dashboard
   if (user) return (
-    <div className="min-h-screen bg-slate-50 font-sans flex text-slate-900">
+    <div className="min-h-screen bg-slate-50 font-sans flex text-slate-900 overflow-hidden">
       {/* Sidebar Navigation */}
-      <aside className="w-64 bg-white border-r border-slate-200 flex flex-col h-screen sticky top-0">
-        <div className="p-6 flex items-center gap-3">
-          <div className="w-8 h-8 bg-brand-blue rounded-lg flex items-center justify-center shadow-lg shadow-blue-100">
-            <GraduationCap className="w-5 h-5 text-white" />
+      <aside className="w-72 bg-white border-r border-brand-border flex flex-col h-screen sticky top-0 hidden lg:flex">
+        <div className="p-8 flex items-center gap-4">
+          <div className="w-10 h-10 bg-brand-blue rounded-2xl flex items-center justify-center shadow-xl shadow-blue-100">
+            <GraduationCap className="w-6 h-6 text-white" />
           </div>
-          <span className="font-display font-extrabold text-xl tracking-tight text-brand-ink">SkillHire</span>
+          <span className="font-display font-black text-2xl tracking-tighter text-brand-ink">SkillHire</span>
         </div>
         
-        <nav className="flex-1 px-4 space-y-1">
-          <button 
-            onClick={() => setDashboardTab('overview')}
-            className={cn(
-              "w-full flex items-center gap-3 px-3 py-2 rounded-md font-bold text-left text-sm transition-colors",
-              dashboardTab === 'overview' ? "bg-brand-blue/5 text-brand-blue" : "text-brand-muted hover:bg-slate-50"
-            )}
-          >
-            <LayoutDashboard className="w-5 h-5" />
-            Dashboard
-          </button>
-          <button 
-            onClick={() => setDashboardTab('profile')}
-            className={cn(
-              "w-full flex items-center gap-3 px-3 py-2 rounded-md font-bold text-left text-sm transition-colors",
-              dashboardTab === 'profile' ? "bg-brand-blue/5 text-brand-blue" : "text-brand-muted hover:bg-slate-50"
-            )}
-          >
-            <UserIcon className="w-5 h-5" />
-            Profile Settings
-          </button>
-          <button 
-            onClick={() => setDashboardTab('my_courses')}
-            className={cn(
-              "w-full flex items-center gap-3 px-3 py-2 rounded-md font-bold text-left text-sm transition-colors",
-              dashboardTab === 'my_courses' ? "bg-brand-blue/5 text-brand-blue" : "text-brand-muted hover:bg-slate-50"
-            )}
-          >
-            <GraduationCap className="w-5 h-5" />
-            My Courses
-          </button>
+        <nav className="flex-1 px-6 space-y-2 mt-4">
+          {[
+            { id: 'overview', icon: LayoutDashboard, label: 'Dashboard Home' },
+            { id: 'my_courses', icon: GraduationCap, label: 'My Courses' },
+            { id: 'resume', icon: Search, label: 'Resume Tools' },
+            { id: 'jobs', icon: Sparkles, label: 'Job Matching' },
+            { id: 'profile', icon: UserIcon, label: 'Settings' }
+          ].map(item => (
+            <button 
+              key={item.id}
+              onClick={() => setDashboardTab(item.id as any)}
+              className={cn(
+                "w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all",
+                (dashboardTab === item.id || (item.id === 'overview' && dashboardTab === 'overview')) 
+                  ? "bg-brand-blue text-white shadow-lg shadow-blue-100" 
+                  : "text-brand-muted hover:bg-slate-50 hover:text-brand-ink"
+              )}
+            >
+              <item.icon className="w-4 h-4" />
+              {item.label}
+            </button>
+          ))}
         </nav>
 
-        <div className="p-4 border-t border-slate-100">
-          <div className="flex items-center gap-3 p-2 relative group">
-            <img 
-              src={user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`} 
-              referrerPolicy="no-referrer"
-              className="w-8 h-8 rounded-full border border-white bg-slate-200 shadow-sm"
-              alt="Profile"
-            />
-            <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-bold text-brand-ink truncate">{user.displayName}</p>
-              <p className="text-[10px] text-brand-muted truncate font-medium">{user.email}</p>
+        <div className="p-6 border-t border-brand-border">
+          <div className="glass p-4 rounded-3xl relative group overflow-hidden">
+            <div className="flex items-center gap-3 relative z-10">
+              <img 
+                src={user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`} 
+                referrerPolicy="no-referrer"
+                className="w-10 h-10 rounded-full border-2 border-white shadow-sm"
+                alt="Profile"
+              />
+              <div className="flex-1 overflow-hidden">
+                <p className="text-xs font-black text-brand-ink truncate">{user.displayName}</p>
+                <p className="text-[10px] font-bold text-brand-muted truncate">ID: {user.uid.slice(0, 8)}</p>
+              </div>
+              <button onClick={logout} className="p-2 text-brand-muted hover:text-red-500 transition-colors">
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
-            <button 
-              onClick={logout}
-              className="absolute right-0 opacity-0 group-hover:opacity-100 transition-opacity p-2 text-brand-muted hover:text-red-500"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
+            <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-brand-blue/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col p-10 space-y-8 overflow-y-auto">
-        {dashboardTab === 'profile' ? (
-          <div className="space-y-8">
-            <header>
-              <h1 className="text-3xl font-extrabold text-brand-ink tracking-tight">Identity Management</h1>
-              <p className="text-brand-muted text-sm mt-1 font-medium">Fine-tune your professional presence across the SkillHire ecosystem.</p>
-            </header>
-            <div className="bg-white p-10 rounded-[40px] border border-brand-border shadow-sm">
-              <ProfileEditor user={user} />
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        {/* Top Bar */}
+        <header className="h-20 bg-white/80 backdrop-blur-xl border-b border-brand-border px-10 flex items-center justify-between sticky top-0 z-40">
+          <div className="flex-1 max-w-xl">
+            <div className="relative group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within:text-brand-blue transition-colors" />
+              <input 
+                type="text" 
+                placeholder="Search courses, skills, or mentors..." 
+                className="w-full bg-slate-50 border border-brand-border rounded-2xl py-3 pl-12 pr-4 text-sm font-medium outline-none focus:border-brand-blue focus:bg-white transition-all"
+              />
             </div>
           </div>
-        ) : dashboardTab === 'my_courses' ? (
-          <div className="space-y-8">
-            <header>
-              <h1 className="text-3xl font-extrabold text-brand-ink tracking-tight">University of You</h1>
-              <p className="text-brand-muted text-sm mt-1 font-medium">Tracking your path to mastery. Complete courses to earn verified certificates.</p>
-            </header>
-            
-            {Object.keys(enrollments).length === 0 ? (
-              <div className="bg-white p-20 rounded-[40px] border border-brand-border shadow-sm text-center space-y-6">
-                <div className="w-20 h-20 bg-brand-cream rounded-full flex items-center justify-center mx-auto">
-                  <BookOpen className="w-10 h-10 text-brand-blue opacity-40" />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-display font-black text-brand-ink">No Active Enrollments</h3>
-                  <p className="text-brand-muted max-w-sm mx-auto font-medium">You haven't added any skills to your methodology yet. Explore the catalog to begin.</p>
-                </div>
-                <button 
-                  onClick={() => setDashboardTab('overview')}
-                  className="px-8 py-4 bg-brand-blue text-white rounded-full font-black uppercase tracking-widest text-xs shadow-xl shadow-blue-100 hover:bg-brand-blue-dark transition-all active:scale-95"
-                >
-                  Discover Courses
-                </button>
+          <div className="flex items-center gap-6 ml-8">
+            <button className="relative p-2 text-brand-muted hover:text-brand-ink transition-colors">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
+            </button>
+            <div className="h-8 w-px bg-brand-border" />
+            <button onClick={() => setDashboardTab('profile')} className="flex items-center gap-3 group">
+              <div className="text-right hidden sm:block">
+                <p className="text-xs font-black text-brand-ink leading-none">{user.displayName}</p>
+                <p className="text-[10px] font-bold text-brand-muted uppercase tracking-widest mt-1">Student</p>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {COURSES.filter(c => enrollments[c.id]).map(course => (
-                  <CourseCard 
-                    key={course.id} 
-                    course={course} 
-                    isEnrolled={true}
-                    isCompleted={completedCourses.includes(course.id)}
-                    progress={enrollments[course.id]?.progress || 0}
-                    onEnroll={enrollInCourse}
-                    onComplete={markCourseComplete}
-                    userName={user.displayName || "Learner"}
-                  />
-                ))}
-              </div>
-            )}
+              <img 
+                src={user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`} 
+                referrerPolicy="no-referrer"
+                className="w-10 h-10 rounded-full border-2 border-brand-blue/20 group-hover:border-brand-blue transition-colors"
+                alt="Profile"
+              />
+            </button>
           </div>
-        ) : (
-          <>
-            <header className="flex justify-between items-center">
-              <div>
-                <h1 className="text-3xl font-extrabold text-brand-ink tracking-tight">Welcome back, {user.displayName?.split(' ')[0]}</h1>
-                <p className="text-brand-muted text-sm mt-1 font-medium">
-                  {analysis ? `Your Growth Score is ${analysis.score}. Explore matching job opportunities below.` : "Ready to accelerate? Upload your resume for an AI analysis."}
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <button className="px-5 py-2.5 border border-brand-border bg-white rounded-full text-sm font-bold text-brand-ink hover:bg-brand-cream transition-colors">
-                  View Certificates
-                </button>
-                <button 
-                  onClick={() => setAnalysis(null)}
-                  className="px-5 py-2.5 bg-brand-blue text-white rounded-full text-sm font-bold shadow-lg shadow-blue-200 hover:bg-brand-blue-dark transition-all active:scale-95"
-                >
-                  Update Resume
-                </button>
-              </div>
-            </header>
+        </header>
 
-            <section className="space-y-6">
-              {!analysis ? (
-                <div className="bg-white p-10 rounded-[32px] border border-brand-border shadow-sm text-center">
-                  <ResumeUploader onAnalysisComplete={handleAnalysisComplete} />
+        <main className="flex-1 p-10 space-y-8 overflow-y-auto bg-[#fafbfc]">
+          {dashboardTab === 'profile' ? (
+            <div className="space-y-8">
+              <header>
+                <h1 className="text-3xl font-display font-black text-brand-ink tracking-tight">Identity Management</h1>
+                <p className="text-brand-muted text-sm mt-1 font-medium">Fine-tune your professional presence across the SkillHire ecosystem.</p>
+              </header>
+              <div className="bg-white p-10 rounded-[40px] border border-brand-border shadow-sm">
+                <ProfileEditor user={user} />
+              </div>
+            </div>
+          ) : dashboardTab === 'my_courses' ? (
+            <div className="space-y-8">
+              <header>
+                <h1 className="text-3xl font-display font-black text-brand-ink tracking-tight">University of You</h1>
+                <p className="text-brand-muted text-sm mt-1 font-medium">Tracking your path to mastery. Complete courses to earn verified certificates.</p>
+              </header>
+              
+              {Object.keys(enrollments).length === 0 ? (
+                <div className="bg-white p-20 rounded-[40px] border border-brand-border shadow-sm text-center space-y-6">
+                  <div className="w-20 h-20 bg-brand-cream rounded-full flex items-center justify-center mx-auto">
+                    <BookOpen className="w-10 h-10 text-brand-blue opacity-40" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-2xl font-display font-black text-brand-ink">No Active Enrollments</h3>
+                    <p className="text-brand-muted max-w-sm mx-auto font-medium">You haven't added any skills to your methodology yet. Explore the catalog to begin.</p>
+                  </div>
+                  <button 
+                    onClick={() => setDashboardTab('overview')}
+                    className="px-8 py-4 bg-brand-blue text-white rounded-full font-black uppercase tracking-widest text-xs shadow-xl shadow-blue-100 hover:bg-brand-blue-dark transition-all active:scale-95"
+                  >
+                    Discover Courses
+                  </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                  {/* AI Resume Health Card */}
-                  <div className="bg-white p-8 rounded-[32px] border border-brand-border shadow-sm">
-                    <div className="flex justify-between items-start mb-6">
-                      <h3 className="font-bold text-brand-ink text-lg tracking-tight">Ecosystem Score</h3>
-                      <span className={cn(
-                        "text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-widest",
-                        analysis.score > 75 ? "text-green-600 bg-green-50" : "text-amber-600 bg-amber-50"
-                      )}>
-                        {analysis.score > 75 ? "EXCELLENT" : "IMPROVABLE"}
-                      </span>
-                    </div>
-                    <div className="flex items-end gap-2 mb-6">
-                      <span className="text-5xl font-extrabold tracking-tighter text-brand-blue">{analysis.score}</span>
-                      <span className="text-brand-muted text-lg font-medium mb-1.5 opacity-40">/ 100</span>
-                    </div>
-                    <div className="space-y-6">
-                      <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-brand-blue transition-all duration-700" 
-                          style={{ width: `${analysis.score}%` }}
-                        />
-                      </div>
-                      <ul className="text-sm text-brand-muted space-y-3 font-medium">
-                        {analysis.feedback.slice(0, 2).map((f, i) => (
-                          <li key={i} className="flex gap-3 leading-relaxed">
-                            <span className="text-brand-blue mt-1.5 shrink-0">•</span>
-                            {f}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-
-                  {/* Course Progress Card */}
-                  <div className="bg-white p-8 rounded-[32px] border border-brand-border shadow-sm">
-                    <h3 className="font-bold text-brand-ink text-lg tracking-tight mb-6">Learning Velocity</h3>
-                    <div className="space-y-6">
-                      <div className="flex justify-between text-sm mb-2">
-                        <span className="font-bold text-brand-muted uppercase text-[10px] tracking-widest">Mastery</span>
-                        <span className="font-black text-brand-ink">{completedCourses.length}/{COURSES.length} Completed</span>
-                      </div>
-                      <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-brand-accent transition-all duration-700" 
-                          style={{ width: `${(completedCourses.length / COURSES.length) * 100}%` }}
-                        />
-                      </div>
-                      <div className="p-4 bg-brand-cream/50 rounded-2xl border border-brand-border/30">
-                        <p className="text-xs text-brand-muted leading-relaxed italic">
-                          {completedCourses.length === COURSES.length 
-                            ? "You've successfully bridged the gap! Apply to jobs now." 
-                            : "Focus on Core Java to increase your match score by 15%."}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Parsed Skill Profile */}
-                  <div className="bg-white p-8 rounded-[32px] border border-brand-border shadow-sm">
-                    <h3 className="font-bold text-brand-ink text-lg tracking-tight mb-4">Skill Topology</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {analysis.skills.map((skill, i) => (
-                        <span key={i} className="px-3 py-1.5 bg-slate-100 text-brand-ink rounded-lg text-xs font-bold border border-slate-200/50">
-                          {skill}
-                        </span>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {COURSES.filter(c => enrollments[c.id]).map(course => (
+                    <CourseCard 
+                      key={course.id} 
+                      course={course} 
+                      isEnrolled={true}
+                      isCompleted={completedCourses.includes(course.id)}
+                      progress={enrollments[course.id]?.progress || 0}
+                      onEnroll={enrollInCourse}
+                      onComplete={markCourseComplete}
+                      userName={user.displayName || "Learner"}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : dashboardTab === 'resume' ? (
+            <div className="space-y-10 max-w-4xl">
+              <header>
+                <h1 className="text-3xl font-display font-black text-brand-ink tracking-tight">Resume Evolution</h1>
+                <p className="text-brand-muted text-sm mt-1 font-medium">Upload your resume to receive AI feedback and ecosystem mapping.</p>
+              </header>
+              <div className="glass p-12 rounded-[40px]">
+                <ResumeUploader onAnalysisComplete={handleAnalysisComplete} />
+              </div>
+              {analysis && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="glass p-8 rounded-[32px] space-y-4">
+                    <h3 className="font-black uppercase tracking-widest text-[10px] text-brand-blue">Analysis Insights</h3>
+                    <ul className="space-y-3">
+                      {analysis.feedback.map((f, i) => (
+                        <li key={i} className="text-xs font-medium text-brand-muted flex gap-2">
+                          <span className="text-brand-blue">•</span> {f}
+                        </li>
                       ))}
-                      <div className="w-full mt-4 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-brand-blue animate-pulse" />
-                        <span className="text-[10px] font-black text-brand-blue uppercase tracking-widest leading-none">
-                          Focus: {analysis.matchingDomains[0]}
-                        </span>
-                      </div>
+                    </ul>
+                  </div>
+                  <div className="glass p-8 rounded-[32px] space-y-4">
+                    <h3 className="font-black uppercase tracking-widest text-[10px] text-brand-blue">Ecosystem Domain</h3>
+                    <p className="text-2xl font-display font-black text-brand-ink">{analysis.matchingDomains[0]}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {analysis.skills.map((s, i) => (
+                        <span key={i} className="px-2 py-1 bg-white rounded-md border text-[9px] font-black uppercase tracking-widest">{s}</span>
+                      ))}
                     </div>
                   </div>
                 </div>
               )}
-            </section>
+            </div>
+          ) : dashboardTab === 'jobs' ? (
+            <div className="space-y-8 max-w-5xl">
+              <header>
+                <h1 className="text-3xl font-display font-black text-brand-ink tracking-tight">Market Synchronization</h1>
+                <p className="text-brand-muted text-sm mt-1 font-medium">Current matches based on your validated skill topology.</p>
+              </header>
+              <div className="glass p-10 rounded-[40px]">
+                <JobRecommendations jobs={matchingJobs} domain={analysis?.matchingDomains[0] || 'General'} />
+              </div>
+            </div>
+          ) : (
+          <div className="flex flex-col lg:flex-row gap-8 items-start">
+            {/* Left Column: Learning & Courses */}
+            <div className="flex-[2] space-y-10 w-full">
+              <header className="flex justify-between items-center">
+                <div className="space-y-1">
+                  <h1 className="text-4xl font-display font-black text-brand-ink tracking-tight">
+                    Welcome back, {user.displayName?.split(' ')[0]}
+                  </h1>
+                  <p className="text-brand-muted text-sm font-medium">Your professional ecosystem is current. 4 new job matches found.</p>
+                </div>
+              </header>
 
-            {analysis && (
-              <section className="bg-white p-10 rounded-[32px] border border-brand-border shadow-sm">
-                <JobRecommendations jobs={matchingJobs} domain={analysis.matchingDomains[0]} />
+              <section className="space-y-6">
+                <div className="flex justify-between items-end">
+                  <h2 className="text-2xl font-display font-black text-brand-ink">Active Curriculum</h2>
+                  <button 
+                    onClick={() => setDashboardTab('my_courses')}
+                    className="text-[10px] font-black uppercase tracking-widest text-brand-blue flex items-center gap-2 hover:opacity-70 transition-opacity"
+                  >
+                    View Enrolled <ChevronRight className="w-3 h-3" />
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {COURSES.map(course => (
+                    <CourseCard 
+                      key={course.id} 
+                      course={course} 
+                      isEnrolled={!!enrollments[course.id]}
+                      isCompleted={completedCourses.includes(course.id)}
+                      progress={enrollments[course.id]?.progress || 0}
+                      onEnroll={enrollInCourse}
+                      onComplete={markCourseComplete}
+                      userName={user.displayName || "Learner"}
+                    />
+                  ))}
+                </div>
               </section>
-            )}
+            </div>
 
-            <section className="space-y-6">
-              <div className="flex justify-between items-end">
-                <h2 className="text-2xl font-extrabold text-brand-ink tracking-tight">Bridge Technical Gaps</h2>
-                <button className="text-sm text-brand-blue font-bold hover:underline transition-all">Curated Curriculum</button>
+            {/* Right Column: AI Analysis & Tools */}
+            <div className="flex-1 space-y-8 w-full">
+              {/* Score Chart Widget */}
+              <div className="glass p-8 rounded-[40px] border border-white/50 flex flex-col items-center text-center space-y-6">
+                <h3 className="text-sm font-black uppercase tracking-widest text-brand-ink">Resume Score</h3>
+                <ResumeScoreChart score={analysis?.score || 0} />
+                <div className="space-y-2">
+                  <p className="text-xs font-black text-brand-ink">
+                    {analysis ? 'Optimized for Hiring' : 'Analysis Pending'}
+                  </p>
+                  <p className="text-[10px] font-medium text-brand-muted max-w-[180px]">
+                    {analysis 
+                      ? `Matching ${analysis.skills.length} core skills in ${analysis.matchingDomains[0]}.` 
+                      : 'Upload your latest resume to analyze your ecosystem positioning.'}
+                  </p>
+                </div>
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {COURSES.map(course => (
-                  <CourseCard 
-                    key={course.id} 
-                    course={course} 
-                    isEnrolled={!!enrollments[course.id]}
-                    isCompleted={completedCourses.includes(course.id)}
-                    progress={enrollments[course.id]?.progress || 0}
-                    onEnroll={enrollInCourse}
-                    onComplete={markCourseComplete}
-                    userName={user.displayName || "Learner"}
-                  />
-                ))}
+
+              {/* Resume Widget */}
+              <div className="glass p-8 rounded-[40px] border border-white/50 space-y-6 overflow-hidden relative">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 bg-brand-blue/10 rounded-2xl flex items-center justify-center">
+                    <Search className="w-5 h-5 text-brand-blue" />
+                  </div>
+                  <h3 className="text-sm font-black uppercase tracking-widest text-brand-ink">Analyzer</h3>
+                </div>
+                
+                <ResumeUploader onAnalysisComplete={handleAnalysisComplete} />
               </div>
-            </section>
-          </>
+
+              {/* Stats Widget */}
+              <div className="glass p-8 rounded-[40px] border border-white/50 space-y-6">
+                <h3 className="text-sm font-black uppercase tracking-widest text-brand-ink">Platform Stats</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-slate-50 p-4 rounded-3xl border border-brand-border/50">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-brand-muted mb-1">Courses</p>
+                    <p className="text-xl font-display font-black text-brand-ink">{completedCourses.length}</p>
+                  </div>
+                  <div className="bg-slate-50 p-4 rounded-3xl border border-brand-border/50">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-brand-muted mb-1">XP Points</p>
+                    <p className="text-xl font-display font-black text-brand-ink">
+                      {completedCourses.reduce((acc, id) => acc + (COURSES.find(c => c.id === id)?.points || 0), 0)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recent Certificates */}
+              {completedCourses.length > 0 && (
+                <div className="glass p-8 rounded-[40px] border border-white/50 space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-sm font-black uppercase tracking-widest text-brand-ink">Certificates</h3>
+                    <Trophy className="w-4 h-4 text-amber-500" />
+                  </div>
+                  <div className="space-y-4">
+                    {completedCourses.slice(0, 3).map(courseId => {
+                      const course = COURSES.find(c => c.id === courseId);
+                      return course ? (
+                        <div key={courseId} className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-brand-border/50 group hover:border-brand-blue transition-colors cursor-pointer">
+                          <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center">
+                            <CheckCircle className="w-5 h-5 text-green-500" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[10px] font-black text-brand-ink truncate uppercase tracking-tight">{course.title}</p>
+                            <p className="text-[9px] font-medium text-brand-muted">Verified badge</p>
+                          </div>
+                        </div>
+                      ) : null;
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         )}
 
         <footer className="pt-10 text-center text-brand-muted text-[10px] font-black uppercase tracking-[0.2em] opacity-40">
@@ -402,7 +456,8 @@ export default function App() {
         </footer>
       </main>
     </div>
-  );
+  </div>
+);
 
   // Home Page
   if (view === 'home') return (

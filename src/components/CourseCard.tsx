@@ -33,8 +33,8 @@ export const CourseCard: React.FC<CourseCardProps> = ({
 }) => {
   const getStatus = () => {
     if (isCompleted) return { label: 'Completed', color: 'text-green-600 bg-green-50 border-green-100' };
-    if (isEnrolled) return { label: 'In Progress', color: 'text-blue-600 bg-blue-50 border-blue-100' };
-    return { label: 'Not Started', color: 'text-slate-400 bg-slate-50 border-slate-100' };
+    if (isEnrolled) return { label: 'In Progress', color: 'text-brand-blue bg-brand-blue/5 border-blue-100' };
+    return { label: 'Available', color: 'text-slate-400 bg-slate-50 border-slate-100' };
   };
 
   const status = getStatus();
@@ -88,45 +88,58 @@ export const CourseCard: React.FC<CourseCardProps> = ({
   };
 
   return (
-    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col group">
+    <div className="glass p-6 rounded-[32px] border border-white/40 flex flex-col group hover:shadow-2xl transition-all duration-300">
       <div className="flex justify-between items-start mb-4">
-        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors capitalize text-xs font-bold px-2.5">
-          {course.domain}
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest bg-white/50 border-white/20">
+          <BookOpen className="w-3 h-3 text-brand-blue" />
+          <span className="text-brand-ink">{course.domain}</span>
         </div>
-        <div className="flex items-center gap-1 text-slate-400 font-bold text-xs uppercase tracking-wider">
+        <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-brand-muted">
           <Trophy className="w-3 h-3 text-amber-500" />
           <span>{course.points} PTS</span>
         </div>
       </div>
       
-      <h3 className="text-lg font-bold text-slate-900 mb-1 truncate">{course.title}</h3>
-      <div className={cn(
-        "inline-flex items-center gap-1.5 px-2 py-0.5 rounded border text-[9px] font-bold uppercase tracking-widest mb-3 w-fit",
-        status.color
-      )}>
-        <span className="w-1.5 h-1.5 rounded-full bg-current" />
-        {status.label}
+      <div className="mb-4">
+        <h3 className="text-xl font-display font-black text-brand-ink mb-1 group-hover:text-brand-blue transition-colors">
+          {course.title}
+        </h3>
+        <div className={cn(
+          "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[9px] font-black uppercase tracking-widest",
+          status.color
+        )}>
+          <span className="w-1 h-1 rounded-full bg-current" />
+          {status.label}
+        </div>
       </div>
       
-      <p className="text-slate-500 text-xs mb-4 line-clamp-2 h-8">{course.description}</p>
+      <p className="text-brand-muted text-xs mb-6 line-clamp-2 leading-relaxed h-8">
+        {course.description}
+      </p>
       
       {isEnrolled && !isCompleted && (
         <div className="space-y-2 mb-6">
-          <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
+          <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-brand-muted">
             <span>Progress</span>
             <span>{progress}%</span>
           </div>
           <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
             <div 
-              className="h-full bg-brand-blue transition-all duration-500" 
+              className="h-full bg-brand-blue transition-all duration-700 ease-out" 
               style={{ width: `${progress}%` }}
             />
           </div>
         </div>
       )}
 
-      <div className="flex items-center gap-4 text-slate-400 text-xs mb-6 mt-auto">
-        <div className="flex items-center gap-1">
+      {isCompleted && (
+        <div className="h-1.5 bg-green-100 rounded-full overflow-hidden mb-6">
+          <div className="h-full bg-green-500" style={{ width: '100%' }} />
+        </div>
+      )}
+
+      <div className="flex items-center gap-4 text-brand-muted text-[10px] font-black uppercase tracking-widest mb-6 mt-auto">
+        <div className="flex items-center gap-1.5">
           <Clock className="w-3 h-3" />
           <span>{course.duration}</span>
         </div>
@@ -135,21 +148,21 @@ export const CourseCard: React.FC<CourseCardProps> = ({
       {!isEnrolled ? (
         <button 
           onClick={() => onEnroll(course.id)}
-          className="w-full py-2.5 bg-brand-blue text-white rounded-lg text-sm font-bold shadow-sm hover:bg-brand-blue-dark transition-all active:scale-95"
+          className="w-full py-3.5 bg-brand-blue text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-100 hover:bg-brand-blue-dark transition-all active:scale-95"
         >
           Enroll Now
         </button>
       ) : isCompleted ? (
         <button 
           onClick={generateCertificate}
-          className="w-full py-2.5 bg-white border border-brand-border text-brand-ink rounded-lg text-sm font-bold hover:bg-brand-cream transition-colors flex items-center justify-center gap-2"
+          className="w-full py-3.5 bg-white border border-brand-border text-brand-ink rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-brand-cream transition-all flex items-center justify-center gap-2"
         >
           Download Certificate
         </button>
       ) : (
         <button 
           onClick={() => onComplete(course.id)}
-          className="w-full py-2.5 bg-brand-accent text-brand-ink rounded-lg text-sm font-bold shadow-sm hover:opacity-90 transition-all active:scale-95"
+          className="w-full py-3.5 bg-brand-accent text-brand-ink rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-emerald-50 hover:opacity-90 transition-all active:scale-95"
         >
           Complete Course
         </button>
