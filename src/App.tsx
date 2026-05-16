@@ -55,6 +55,7 @@ export default function App() {
   const [matchingJobs, setMatchingJobs] = useState<any[]>([]);
   const [activeCourse, setActiveCourse] = useState<Course | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [firebaseError, setFirebaseError] = useState<{ path: string, message: string } | null>(null);
   const [pinModal, setPinModal] = useState<{ isOpen: boolean, courseId: string | null, error: string | null, pin: string }>({
     isOpen: false,
     courseId: null,
@@ -95,7 +96,8 @@ export default function App() {
                 enrollMap[d.courseId] = { progress: d.progress, status: d.status };
               });
               setEnrollments(enrollMap);
-            } catch (err) {
+            } catch (err: any) {
+              setFirebaseError({ path: enrollPath, message: err.message });
               handleFirestoreError(err, OperationType.LIST, enrollPath);
             }
           } else {
@@ -110,13 +112,19 @@ export default function App() {
             };
             try {
               await setDoc(userRef, newUser);
-            } catch (err) {
+            } catch (err: any) {
+              setFirebaseError({ path: userPath, message: err.message });
               handleFirestoreError(err, OperationType.CREATE, userPath);
             }
             setCompletedCourses([]);
           }
-        } catch (err) {
-          handleFirestoreError(err, OperationType.GET, userPath);
+        } catch (err: any) {
+          try {
+            setFirebaseError({ path: userPath, message: err.message });
+            handleFirestoreError(err, OperationType.GET, userPath);
+          } catch (e) {
+            console.error("Initialization error:", e);
+          }
         }
       }
       setLoading(false);
@@ -176,6 +184,10 @@ export default function App() {
         message = "IDENTITY CONFLICT: This email is already registered. Try logging in instead.";
       } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
         message = "AUTH FAILURE: Incorrect email or password. Please verify your credentials.";
+      } else if (err.code === 'auth/unauthorized-domain') {
+        const domain = window.location.hostname;
+        const projectId = firebaseConfigData.projectId;
+        message = `UNAUTHORIZED DOMAIN: This URL [${domain}] is not allowed in your Firebase settings. Please visit: https://console.firebase.google.com/project/${projectId}/authentication/settings and add '${domain}' to 'Authorized domains'.`;
       }
       setAuthError(message);
     } finally {
@@ -198,6 +210,10 @@ export default function App() {
         );
       } else if (err.code === 'auth/popup-closed-by-user') {
         setAuthError("Sign-in popup was closed. Please try again.");
+      } else if (err.code === 'auth/unauthorized-domain') {
+        const domain = window.location.hostname;
+        const projectId = firebaseConfigData.projectId;
+        setAuthError(`UNAUTHORIZED DOMAIN: This URL [${domain}] is not allowed in your Firebase settings. Please visit: https://console.firebase.google.com/project/${projectId}/authentication/settings and add '${domain}' to 'Authorized domains'.`);
       } else {
         setAuthError(err.message);
       }
@@ -444,6 +460,39 @@ export default function App() {
         </header>
 
         <main className="flex-1 p-10 space-y-8 overflow-y-auto bg-brand-cream/50">
+          {firebaseError && (
+            <div className="bg-red-50 border border-red-200 p-6 rounded-[32px] flex flex-col md:flex-row gap-6 items-start">
+              <div className="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center shrink-0">
+                <Settings className="w-6 h-6 text-red-600" />
+              </div>
+              <div className="space-y-2 flex-1">
+                <h3 className="text-lg font-black text-red-900 leading-tight">Firebase Security Rules Required</h3>
+                <p className="text-sm text-red-700 font-medium leading-relaxed">
+                  Your project <span className="font-bold underline">[{firebaseConfigData.projectId}]</span> returned a <span className="font-mono bg-red-100 px-1 rounded px-1">PERMISSION_DENIED</span> error for path: <span className="font-mono bg-red-100 px-1 rounded">/{firebaseError.path}</span>. 
+                  <br /><br />
+                  Since this is your own Firebase project, you must **manually** deploy the security rules. 
+                  Visit the <a href={`https://console.firebase.google.com/project/${firebaseConfigData.projectId}/firestore/rules`} target="_blank" rel="noreferrer" className="underline font-bold hover:text-red-900">Firestore Rules Console</a> and paste the required rules provided in the chat.
+                </p>
+                <div className="flex gap-4 pt-2">
+                  <button 
+                    onClick={() => setFirebaseError(null)}
+                    className="text-[10px] font-black uppercase tracking-widest text-red-800 hover:opacity-70"
+                  >
+                    Dismiss Warning
+                  </button>
+                  <a 
+                    href={`https://console.firebase.google.com/project/${firebaseConfigData.projectId}/firestore/rules`} 
+                    target="_blank" 
+                    rel="noreferrer"
+                    className="text-[10px] font-black uppercase tracking-widest bg-red-600 text-white px-4 py-2 rounded-xl hover:bg-red-700 transition-colors"
+                  >
+                    Open Console
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+
           {dashboardTab === 'profile' ? (
             <div className="space-y-8">
               <header>

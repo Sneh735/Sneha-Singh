@@ -25,9 +25,15 @@ function getGenAI() {
     }
     
     if (apiKey === "YOUR_GEMINI_API_KEY" || apiKey === "AIzaSy...") {
-      throw new Error("GEMINI_API_KEY is still set to a placeholder value. Please set a valid API key in the Secrets panel.");
+      throw new Error("GEMINI_API_KEY is still set to a placeholder value. Please go to the 'Secrets' panel in AI Studio and set a valid Gemini API key.");
     }
     
+    // Check if the key looks like a Firebase key instead of a Gemini key (common mistake)
+    // Most Gemini keys are ~39 chars and start with AIzaSy
+    if (apiKey && apiKey.length < 30) {
+      console.warn(`[AI] Warning: GEMINI_API_KEY seems unusually short (${apiKey.length} chars).`);
+    }
+
     console.log(`[AI] Initializing with API key (length: ${apiKey.length}, prefix: ${apiKey.substring(0, 7)}...)`);
     cachedGenAI = new GoogleGenAI({ apiKey });
   }
@@ -49,7 +55,16 @@ async function startServer() {
       }
 
       console.log(`[AI] Analyzing resume (${text.length} chars)`);
-      const ai = getGenAI();
+      let ai;
+      try {
+        ai = getGenAI();
+      } catch (e: any) {
+        console.error("[AI] Configuration Error:", e.message);
+        return res.status(500).json({ 
+          error: "Gemini API key is missing or invalid in the server environment.",
+          help: "Please check the 'Secrets' panel in AI Studio and ensure GEMINI_API_KEY is set correctly."
+        });
+      }
       
       const response = await ai.models.generateContent({ 
         model: "gemini-1.5-flash", 
@@ -92,7 +107,17 @@ async function startServer() {
       res.json(JSON.parse(resultText));
     } catch (error: any) {
       console.error("AI Analysis Error:", error);
-      const status = error.status || (error.message?.includes("API key not valid") ? 401 : 500);
+      
+      const isApiKeyInvalid = error.message?.includes("API key not valid") || error.status === 400 || error.status === 401;
+      
+      if (isApiKeyInvalid) {
+        return res.status(401).json({
+          error: "INVALID GEMINI API KEY",
+          help: "The API key in your 'Secrets' panel is invalid. Make sure you are using a GEMINI API key from https://aistudio.google.com/app/apikey and NOT a Firebase API key. Update it in AI Studio > Secrets > GEMINI_API_KEY."
+        });
+      }
+
+      const status = error.status || 500;
       res.status(status).json({ 
         error: error.message || "Internal server error during AI analysis",
         details: error.details || [] 
