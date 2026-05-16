@@ -75,6 +75,34 @@
         "enrolledAt": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "courseId"]
+    },
+    "SkillAnalysis": {
+      "title": "Skill Analysis",
+      "description": "AI analysis of user skills vs targets",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "resumeText": { "type": "string" },
+        "analysis": { "type": "string" },
+        "roadmap": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "analysis"]
+    },
+    "InterviewHistory": {
+      "title": "Interview History",
+      "description": "Logs of AI mock interviews",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "topic": { "type": "string" },
+        "chat": { "type": "array", "items": { "type": "object" } },
+        "feedback": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "topic"]
     }
   },
   "firestore": {
@@ -97,6 +125,14 @@
     "/jobs/{jobId}": {
       "schema": "Job",
       "description": "Job database for matching"
+    },
+    "/skill_analysis/{analysisId}": {
+      "schema": "SkillAnalysis",
+      "description": "User skill gap analysis records"
+    },
+    "/interview_history/{interviewId}": {
+      "schema": "InterviewHistory",
+      "description": "Mock interview sessions"
     }
   }
 }

@@ -27,13 +27,9 @@ service cloud.firestore {
       allow create: if isOwner(userId) && isValidUser(incoming());
       allow update: if isOwner(userId) 
         && isValidUser(incoming())
-        && incoming().uid == existing().uid
-        && incoming().email == existing().email
         && (
-          // Action: Mark Course Complete
           incoming().diff(existing()).affectedKeys().hasOnly(['completedCourses']) ||
-          // Action: Update Profile
-          incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'keySkills', 'experience', 'education'])
+          incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'keySkills', 'experience', 'education', 'bio', 'phoneNumber', 'graduationDetails', 'dob', 'enrollmentPin'])
         );
     }
 
@@ -46,7 +42,10 @@ service cloud.firestore {
       allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
       allow create: if isSignedIn() && incoming().userId == request.auth.uid;
       allow update: if isSignedIn() && resource.data.userId == request.auth.uid 
-        && incoming().diff(existing()).affectedKeys().hasOnly(['progress', 'status']);
+        && (
+          incoming().diff(existing()).affectedKeys().hasOnly(['progress', 'status'])
+        );
+      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
 
     match /certificates/{certId} {
@@ -57,6 +56,18 @@ service cloud.firestore {
 
     match /jobs/{jobId} {
       allow read: if isSignedIn();
+    }
+
+    match /skill_analysis/{analysisId} {
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+    }
+
+    match /interview_history/{interviewId} {
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
     }
   }
 }

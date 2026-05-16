@@ -1,32 +1,50 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Syne", sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Clash Display", "Outfit", sans-serif;
   
-  --color-brand-blue: #1a6ef5;
-  --color-brand-blue-dark: #0d4db5;
-  --color-brand-blue-light: #e8f1ff;
-  --color-brand-accent: #00d4aa;
-  --color-brand-ink: #0f1923;
-  --color-brand-muted: #6b7a8f;
-  --color-brand-cream: #f4f0e8;
-  --color-brand-border: #dde4ef;
+  --color-brand-blue: #0066cc;
+  --color-brand-blue-dark: #004c99;
+  --color-brand-blue-light: #e6f3ff;
+  --color-brand-accent: #33ccff;
+  --color-brand-ink: #001f3f;
+  --color-brand-muted: #4d7a97;
+  --color-brand-cream: #f0f8ff; /* Alice Blue - a very light blue */
+  --color-brand-border: #d1e9ff;
+}
+
+@layer components {
+  /* Progress Stats Bar */
+  .course-stats {
+    display: flex;
+    gap: 20px;
+    background: var(--color-brand-blue-light);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+  }
+
+  .stat-item {
+    font-weight: 600;
+    color: var(--color-brand-ink);
+  }
+
+  .certificate-badge {
+    background: #10b981;
+    color: white;
+    padding: 5px 12px;
+    border-radius: 5px;
+    font-size: 12px;
+  }
 }
 
 @layer utilities {
   .glass {
-    @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-xl;
+    @apply bg-white/60 backdrop-blur-xl border border-white/30 shadow-lg;
   }
   .glass-dark {
     @apply bg-brand-ink/40 backdrop-blur-xl border border-white/10 shadow-2xl;
-  }
-}
-
-@layer base {
-  body {
-    @apply bg-brand-cream text-brand-ink;
   }
 }
 

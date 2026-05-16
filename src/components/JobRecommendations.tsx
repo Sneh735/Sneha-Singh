@@ -16,37 +16,38 @@ interface JobRecommendationsProps {
 
 export default function JobRecommendations({ jobs, domain }: JobRecommendationsProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 font-sans">
       <div className="flex justify-between items-center mb-2">
-        <h2 className="text-lg font-bold text-slate-900">Recommended Job Matches</h2>
-        <a href="#" className="text-sm text-blue-600 font-medium hover:underline">View all</a>
+        <h2 className="text-lg font-display font-black text-brand-ink underline decoration-brand-blue/30 underline-offset-8 decoration-4">Market Signal</h2>
+        <a href="#" className="text-[10px] font-black uppercase tracking-widest text-brand-blue hover:underline">Ecosystem Scanner</a>
       </div>
       
       <div className="space-y-3">
         {jobs.map((job) => (
-          <div key={job.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4 hover:border-blue-300 transition-colors cursor-pointer group">
-            <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center font-bold text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+          <div key={job.id} className="bg-white/60 backdrop-blur-md p-5 rounded-3xl border border-brand-border/50 flex items-center gap-4 hover:border-brand-blue transition-all cursor-pointer group shadow-sm">
+            <div className="w-14 h-14 rounded-2xl bg-brand-blue-light/50 flex items-center justify-center font-black text-brand-blue group-hover:bg-brand-blue group-hover:text-white transition-all transform group-hover:rotate-6">
               {job.company.substring(0, 2).toUpperCase()}
             </div>
-            <div className="flex-1">
-              <h4 className="font-semibold text-slate-800 tracking-tight">{job.title}</h4>
-              <p className="text-sm text-slate-500">{job.company} • {job.location}</p>
+            <div className="flex-1 min-w-0">
+              <h4 className="font-display font-black text-brand-ink tracking-tight truncate">{job.title}</h4>
+              <p className="text-xs text-brand-muted font-medium">{job.company} • {job.location}</p>
             </div>
             <div className="text-right flex flex-col items-end">
-              <div className="text-xs font-bold text-blue-600 mb-1 tracking-wider uppercase">98% MATCH</div>
+              <div className="text-[9px] font-black text-brand-blue mb-1 tracking-widest uppercase">MATCH INDEX</div>
               <div className="flex gap-1">
-                <div className="w-1 h-3 bg-blue-500 rounded-full"></div>
-                <div className="w-1 h-3 bg-blue-500 rounded-full"></div>
-                <div className="w-1 h-3 bg-blue-500 rounded-full"></div>
-                <div className="w-1 h-3 bg-blue-200 rounded-full"></div>
+                <div className="w-3 h-1 bg-brand-blue rounded-full"></div>
+                <div className="w-3 h-1 bg-brand-blue rounded-full"></div>
+                <div className="w-3 h-1 bg-brand-blue rounded-full"></div>
+                <div className="w-1.5 h-1 bg-brand-border rounded-full"></div>
               </div>
             </div>
           </div>
         ))}
         {jobs.length === 0 && (
-          <div className="py-12 text-center text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-            <Briefcase className="w-8 h-8 mx-auto mb-2 opacity-20" />
-            <p className="text-xs font-medium">Complete courses to see more matching jobs</p>
+          <div className="py-16 text-center text-brand-muted bg-brand-blue-light/20 rounded-[40px] border border-dashed border-brand-border">
+            <Briefcase className="w-10 h-10 mx-auto mb-4 opacity-20 text-brand-blue" />
+            <p className="text-[10px] font-black uppercase tracking-widest">Awaiting Analysis Data</p>
+            <p className="text-[9px] font-medium mt-1 italic">Upload a resume to synchronize with global matches</p>
           </div>
         )}
       </div>

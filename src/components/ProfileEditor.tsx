@@ -3,7 +3,7 @@ import { User } from 'firebase/auth';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../lib/firebase';
-import { Camera, Mail, Phone, User as UserIcon, Loader2, Check, FileText } from 'lucide-react';
+import { Camera, Mail, Phone, User as UserIcon, Loader2, Check, FileText, Clock, GraduationCap, Lock } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { motion } from 'motion/react';
 
@@ -20,12 +20,17 @@ export default function ProfileEditor({ user, onUpdate }: ProfileEditorProps) {
     bio: '',
     phoneNumber: '',
     education: '',
+    graduationDetails: '',
+    dob: '',
+    enrollmentPin: '',
     experience: 0,
     photoURL: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`
   });
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const getWordCount = (text: string) => text.trim().split(/\s+/).filter(Boolean).length;
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -38,6 +43,9 @@ export default function ProfileEditor({ user, onUpdate }: ProfileEditorProps) {
           bio: data.bio || '',
           phoneNumber: data.phoneNumber || '',
           education: data.education || '',
+          graduationDetails: data.graduationDetails || '',
+          dob: data.dob || '',
+          enrollmentPin: data.enrollmentPin || '',
           experience: data.experience || 0,
           photoURL: data.photoURL || user.photoURL || prev.photoURL
         }));
@@ -55,6 +63,10 @@ export default function ProfileEditor({ user, onUpdate }: ProfileEditorProps) {
   };
 
   const handleSave = async () => {
+    if (getWordCount(profileData.bio) > 250) {
+      alert("Bio exceeds 250 words limit.");
+      return;
+    }
     setLoading(true);
     try {
       let finalPhotoURL = profileData.photoURL;
@@ -73,6 +85,9 @@ export default function ProfileEditor({ user, onUpdate }: ProfileEditorProps) {
         bio: profileData.bio,
         phoneNumber: profileData.phoneNumber,
         education: profileData.education,
+        graduationDetails: profileData.graduationDetails,
+        dob: profileData.dob,
+        enrollmentPin: profileData.enrollmentPin,
         experience: profileData.experience,
         photoURL: finalPhotoURL,
         updatedAt: new Date().toISOString()
@@ -91,10 +106,10 @@ export default function ProfileEditor({ user, onUpdate }: ProfileEditorProps) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-10">
-      <div className="flex flex-col items-center gap-6">
-        <div className="relative group">
-          <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-xl bg-slate-100 flex items-center justify-center">
+    <div className="max-w-3xl mx-auto space-y-10">
+      <div className="flex flex-col md:flex-row items-center gap-10 bg-brand-cream/30 p-8 rounded-[40px] border border-brand-border/50">
+        <div className="relative group shrink-0">
+          <div className="w-40 h-40 rounded-[48px] overflow-hidden border-4 border-white shadow-2xl bg-white flex items-center justify-center">
             <img 
               src={previewUrl || profileData.photoURL} 
               alt="Avatar" 
@@ -104,10 +119,10 @@ export default function ProfileEditor({ user, onUpdate }: ProfileEditorProps) {
           </div>
           <button 
             onClick={() => fileInputRef.current?.click()}
-            className="absolute inset-0 bg-black/40 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-white gap-1"
+            className="absolute inset-0 bg-brand-ink/60 rounded-[48px] flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all text-white gap-2"
           >
-            <Camera className="w-6 h-6" />
-            <span className="text-[10px] font-black uppercase tracking-widest">Change</span>
+            <Camera className="w-8 h-8" />
+            <span className="text-[10px] font-black uppercase tracking-widest">Update Photo</span>
           </button>
           <input 
             type="file" 
@@ -116,21 +131,21 @@ export default function ProfileEditor({ user, onUpdate }: ProfileEditorProps) {
             className="hidden" 
             accept="image/*"
           />
-          {uploading && (
-            <div className="absolute -right-2 -bottom-2 bg-white p-2 rounded-full shadow-lg">
-              <Loader2 className="w-5 h-5 text-brand-blue animate-spin" />
-            </div>
-          )}
         </div>
-        <div className="text-center">
-          <h2 className="text-2xl font-display font-black text-brand-ink">{profileData.displayName || 'Unnamed Maven'}</h2>
-          <p className="text-xs font-black text-brand-blue uppercase tracking-widest mt-1">Professional Identity</p>
+        <div className="flex-1 space-y-2 text-center md:text-left">
+          <div className="inline-block px-3 py-1 bg-brand-blue/10 rounded-lg text-[10px] font-black text-brand-blue uppercase tracking-[0.2em] mb-2">
+            Professional ID: SKILL-{user.uid.slice(0, 8).toUpperCase()}
+          </div>
+          <h2 className="text-4xl font-display font-black text-brand-ink leading-tight">{profileData.displayName || 'Unnamed Maven'}</h2>
+          <p className="text-brand-muted font-medium italic">"{profileData.bio.slice(0, 100)}{profileData.bio.length > 100 ? '...' : ''}"</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Basic Info */}
-        <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+        {/* Personal Discovery */}
+        <div className="space-y-8">
+          <h3 className="text-xs font-black uppercase tracking-[0.3em] text-brand-blue border-b border-brand-blue/20 pb-2">Civil Identity</h3>
+          
           <div className="space-y-1.5">
             <label className="text-[10px] font-black text-brand-ink uppercase tracking-widest flex items-center gap-2">
               <UserIcon className="w-3 h-3 text-brand-blue" />
@@ -140,8 +155,8 @@ export default function ProfileEditor({ user, onUpdate }: ProfileEditorProps) {
               type="text" 
               value={profileData.displayName}
               onChange={(e) => setProfileData({ ...profileData, displayName: e.target.value })}
-              className="w-full px-4 py-3 bg-white border border-brand-border rounded-xl font-medium focus:border-brand-blue outline-none transition-colors shadow-sm"
-              placeholder="e.g. Alex Rivera"
+              className="w-full px-5 py-4 bg-white border border-brand-border rounded-2xl font-bold text-sm focus:border-brand-blue outline-none transition-all shadow-sm"
+              placeholder="Full Name"
             />
           </div>
 
@@ -151,27 +166,77 @@ export default function ProfileEditor({ user, onUpdate }: ProfileEditorProps) {
               Contact Number
             </label>
             <input 
-              type="text" 
+              type="tel" 
               value={profileData.phoneNumber}
               onChange={(e) => setProfileData({ ...profileData, phoneNumber: e.target.value })}
-              className="w-full px-4 py-3 bg-white border border-brand-border rounded-xl font-medium focus:border-brand-blue outline-none transition-colors shadow-sm"
-              placeholder="+1 (555) 000-0000"
+              className="w-full px-5 py-4 bg-white border border-brand-border rounded-2xl font-bold text-sm focus:border-brand-blue outline-none transition-all shadow-sm"
+              placeholder="Contact Number"
             />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black text-brand-ink uppercase tracking-widest flex items-center gap-2">
+              <Clock className="w-3 h-3 text-brand-blue" />
+              Date of Birth
+            </label>
+            <input 
+              type="date" 
+              value={profileData.dob}
+              onChange={(e) => setProfileData({ ...profileData, dob: e.target.value })}
+              className="w-full px-5 py-4 bg-white border border-brand-border rounded-2xl font-bold text-sm focus:border-brand-blue outline-none transition-all shadow-sm"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black text-brand-ink uppercase tracking-widest flex items-center gap-2">
+              <Lock className="w-3 h-3 text-brand-blue" />
+              Enrollment PIN/Password
+            </label>
+            <input 
+              type="password" 
+              value={profileData.enrollmentPin}
+              onChange={(e) => setProfileData({ ...profileData, enrollmentPin: e.target.value })}
+              className="w-full px-5 py-4 bg-white border border-brand-border rounded-2xl font-bold text-sm focus:border-brand-blue outline-none transition-all shadow-sm"
+              placeholder="Set a PIN for course access"
+              maxLength={6}
+            />
+            <p className="text-[9px] font-bold text-brand-muted uppercase tracking-widest pl-1">Required to authenticate course enrollment</p>
           </div>
         </div>
 
-        {/* Professional Info */}
-        <div className="space-y-6">
+        {/* Academic Topology */}
+        <div className="space-y-8">
+          <h3 className="text-xs font-black uppercase tracking-[0.3em] text-brand-blue border-b border-brand-blue/20 pb-2">Academic Topology</h3>
+          
           <div className="space-y-1.5">
             <label className="text-[10px] font-black text-brand-ink uppercase tracking-widest flex items-center gap-2">
-              <FileText className="w-3 h-3 text-brand-blue" />
-              Professional Bio
+              <GraduationCap className="w-3 h-3 text-brand-blue" />
+              Graduation Details
+            </label>
+            <input 
+              type="text" 
+              value={profileData.graduationDetails}
+              onChange={(e) => setProfileData({ ...profileData, graduationDetails: e.target.value })}
+              className="w-full px-5 py-4 bg-white border border-brand-border rounded-2xl font-bold text-sm focus:border-brand-blue outline-none transition-all shadow-sm"
+              placeholder="Degree, Major, Graduation Year"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black text-brand-ink uppercase tracking-widest flex items-center gap-2 flex-justify-between w-full">
+              <span className="flex items-center gap-2"><FileText className="w-3 h-3 text-brand-blue" /> Professional Bio</span>
+              <span className={cn(
+                "text-[9px] font-bold",
+                getWordCount(profileData.bio) > 250 ? "text-red-500" : "text-brand-muted"
+              )}>
+                {getWordCount(profileData.bio)} / 250 Words
+              </span>
             </label>
             <textarea 
               value={profileData.bio}
               onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
-              className="w-full px-4 py-3 bg-white border border-brand-border rounded-xl font-medium focus:border-brand-blue outline-none transition-colors shadow-sm min-h-[108px] resize-none"
-              placeholder="Tell us about your background and goals..."
+              className="w-full px-5 py-4 bg-white border border-brand-border rounded-2xl font-bold text-sm focus:border-brand-blue outline-none transition-all shadow-sm min-h-[160px] resize-none leading-relaxed"
+              placeholder="Craft your 250-word manifest..."
             />
           </div>
         </div>

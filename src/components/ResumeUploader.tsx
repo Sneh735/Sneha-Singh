@@ -4,8 +4,9 @@ import { analyzeResume, ResumeAnalysis } from '../services/ai';
 import { cn } from '../lib/utils';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// PDF.js worker setup
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// Set worker path from unpkg CDN
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+
 
 interface ResumeUploaderProps {
   onAnalysisComplete: (analysis: ResumeAnalysis) => void;
@@ -43,9 +44,9 @@ export default function ResumeUploader({ onAnalysisComplete }: ResumeUploaderPro
       const text = await extractTextFromPdf(file);
       const analysis = await analyzeResume(text);
       onAnalysisComplete(analysis);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError("Failed to analyze resume. Please try again.");
+      setError(err instanceof Error ? err.message : "Failed to analyze resume. Please try again.");
     } finally {
       setIsUploading(false);
     }

@@ -1,13 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { auth, loginWithGoogle, logout, db } from './lib/firebase';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { auth, loginWithGoogle, logout, db, handleFirestoreError, OperationType } from './lib/firebase';
+import { 
+  onAuthStateChanged, 
+  User, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  updateProfile 
+} from 'firebase/auth';
 import { collection, query, where, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
 import ResumeUploader from './components/ResumeUploader';
+import AuthPage from './components/AuthPage';
 import { CourseCard } from './components/CourseCard';
 import JobRecommendations from './components/JobRecommendations';
 import ProfileEditor from './components/ProfileEditor';
+import CourseContent from './components/CourseContent';
 import { ResumeAnalysis } from './services/ai';
+import { Course } from './types';
 import { cn } from './lib/utils';
+import firebaseConfigData from '../firebase-applet-config.json';
 import { 
   GraduationCap, 
   LayoutDashboard, 
@@ -24,62 +34,89 @@ import {
   Settings,
   ChevronRight,
   CheckCircle,
-  Clock
+  Clock,
+  Map,
+  MessageSquare
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ResumeScoreChart from './components/ResumeScoreChart';
-
-const COURSES = [
-  { id: '1', title: 'Introduction to HTML', description: 'Learn the foundational building blocks of the web and structure your first page.', domain: 'Web Dev', duration: '5h', points: 100 },
-  { id: '2', title: 'CSS Fundamentals', description: 'Master the art of styling web pages with layouts, colors, and responsive design.', domain: 'Web Dev', duration: '8h', points: 120 },
-  { id: '3', title: 'JavaScript Basics', description: 'Understand the core concepts of JavaScript and add interactivity to your sites.', domain: 'Frontend', duration: '12h', points: 150 },
-  { id: '4', title: 'Python for Beginners', description: 'Start your coding journey with one of the most popular and versatile languages.', domain: 'Coding', duration: '10h', points: 130 },
-  { id: '5', title: 'Core Java', description: 'Dive into object-oriented programming with the powerful and robust Java language.', domain: 'Backend', duration: '15h', points: 180 },
-];
+import { COURSES } from './data/courses';
+import CareerPath from './components/CareerPath';
+import MockInterview from './components/MockInterview';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'home' | 'login' | 'register'>('home');
-  const [dashboardTab, setDashboardTab] = useState<'overview' | 'profile' | 'my_courses'>('overview');
+  const [dashboardTab, setDashboardTab] = useState<'overview' | 'profile' | 'my_courses' | 'path' | 'interview' | 'resume' | 'jobs'>('overview');
   const [analysis, setAnalysis] = useState<ResumeAnalysis | null>(null);
   const [completedCourses, setCompletedCourses] = useState<string[]>([]);
   const [enrollments, setEnrollments] = useState<Record<string, { progress: number, status: string }>>({});
   const [matchingJobs, setMatchingJobs] = useState<any[]>([]);
+  const [activeCourse, setActiveCourse] = useState<Course | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [pinModal, setPinModal] = useState<{ isOpen: boolean, courseId: string | null, error: string | null, pin: string }>({
+    isOpen: false,
+    courseId: null,
+    error: null,
+    pin: ''
+  });
+
+  // Auth form state
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [authName, setAuthName] = useState('');
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [authLoading, setAuthLoading] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
       setUser(u);
       if (u) {
         // Fetch user progress
-        const userRef = doc(db, "users", u.uid);
-        const userDoc = await getDoc(userRef);
-        
-        if (userDoc.exists()) {
-          const data = userDoc.data();
-          setCompletedCourses(data.completedCourses || []);
+        const userPath = `users/${u.uid}`;
+        try {
+          const userRef = doc(db, "users", u.uid);
+          const userDoc = await getDoc(userRef);
           
-          // Fetch Enrollments
-          const enrollmentsQuery = query(collection(db, "enrollments"), where("userId", "==", u.uid));
-          const enrollmentsSnap = await getDocs(enrollmentsQuery);
-          const enrollMap: Record<string, any> = {};
-          enrollmentsSnap.forEach(doc => {
-            const d = doc.data();
-            enrollMap[d.courseId] = { progress: d.progress, status: d.status };
-          });
-          setEnrollments(enrollMap);
-        } else {
-          // Initialize user document with mandatory fields
-          const newUser = {
-            uid: u.uid,
-            email: u.email,
-            displayName: u.displayName,
-            photoURL: u.photoURL,
-            completedCourses: [],
-            createdAt: new Date().toISOString()
-          };
-          await setDoc(userRef, newUser);
-          setCompletedCourses([]);
+          if (userDoc.exists()) {
+            const data = userDoc.data();
+            setCompletedCourses(data.completedCourses || []);
+            setUserProfile(data);
+            
+            // Fetch Enrollments
+            const enrollPath = "enrollments";
+            try {
+              const enrollmentsQuery = query(collection(db, enrollPath), where("userId", "==", u.uid));
+              const enrollmentsSnap = await getDocs(enrollmentsQuery);
+              const enrollMap: Record<string, any> = {};
+              enrollmentsSnap.forEach(doc => {
+                const d = doc.data();
+                enrollMap[d.courseId] = { progress: d.progress, status: d.status };
+              });
+              setEnrollments(enrollMap);
+            } catch (err) {
+              handleFirestoreError(err, OperationType.LIST, enrollPath);
+            }
+          } else {
+            // Initialize user document with mandatory fields
+            const newUser = {
+              uid: u.uid,
+              email: u.email,
+              displayName: u.displayName,
+              photoURL: u.photoURL,
+              completedCourses: [],
+              createdAt: new Date().toISOString()
+            };
+            try {
+              await setDoc(userRef, newUser);
+            } catch (err) {
+              handleFirestoreError(err, OperationType.CREATE, userPath);
+            }
+            setCompletedCourses([]);
+          }
+        } catch (err) {
+          handleFirestoreError(err, OperationType.GET, userPath);
         }
       }
       setLoading(false);
@@ -93,10 +130,80 @@ export default function App() {
     const res = await fetch('/api/jobs/match', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ skills: data.skills, domain: data.matchingDomains[0] })
+      body: JSON.stringify({ skills: data.keywordAnalysis?.foundKeywords || [], domain: 'General Tech' })
     });
     const result = await res.json();
     setMatchingJobs(result.matches);
+  };
+
+  const handleEmailAuth = async (e: React.FormEvent, type: 'login' | 'register') => {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError(null);
+    try {
+      if (type === 'register') {
+        const userCredential = await createUserWithEmailAndPassword(auth, authEmail, authPassword);
+        await updateProfile(userCredential.user, { displayName: authName });
+        
+        // Explicitly create user doc here
+        const userRef = doc(db, "users", userCredential.user.uid);
+        await setDoc(userRef, {
+          uid: userCredential.user.uid,
+          email: authEmail,
+          displayName: authName,
+          photoURL: `https://api.dicebear.com/7.x/avataaars/svg?seed=${authEmail}`,
+          completedCourses: [],
+          createdAt: new Date().toISOString(),
+          bio: '',
+          phoneNumber: '',
+          education: '',
+          graduationDetails: '',
+          dob: '',
+          enrollmentPin: ''
+        });
+      } else {
+        await signInWithEmailAndPassword(auth, authEmail, authPassword);
+      }
+    } catch (err: any) {
+      console.error("Auth error details:", err);
+      let message = err.message;
+      if (err.code === 'auth/operation-not-allowed') {
+        const projectId = firebaseConfigData.projectId;
+        message = `SIGN-IN PROVIDER DISABLED: You must enable 'Email/Password' in the Firebase Console for project [${projectId}]. Visit: https://console.firebase.google.com/project/${projectId}/authentication/providers`;
+      } else if (err.code === 'auth/weak-password') {
+        message = "SECURITY ALERT: Password must be at least 6 characters.";
+      } else if (err.code === 'auth/email-already-in-use') {
+        message = "IDENTITY CONFLICT: This email is already registered. Try logging in instead.";
+      } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+        message = "AUTH FAILURE: Incorrect email or password. Please verify your credentials.";
+      }
+      setAuthError(message);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setAuthLoading(true);
+    setAuthError(null);
+    try {
+      await loginWithGoogle();
+    } catch (err: any) {
+      if (err.code !== 'auth/popup-closed-by-user') {
+        console.error("Google Auth error:", err);
+      }
+      if (err.code === 'auth/operation-not-allowed') {
+        setAuthError(
+          "Google authentication is not enabled. Please enable it in the Firebase Console."
+        );
+      } else if (err.code === 'auth/popup-closed-by-user') {
+        setAuthError("Sign-in popup was closed. Please try again.");
+      } else {
+        setAuthError(err.message);
+      }
+    } finally {
+      setAuthLoading(false);
+    }
   };
 
   const markCourseComplete = async (courseId: string) => {
@@ -105,14 +212,23 @@ export default function App() {
     setCompletedCourses(newCompleted);
     
     // Update User Doc
-    await setDoc(doc(db, "users", user.uid), { completedCourses: newCompleted }, { merge: true });
+    const userPath = `users/${user.uid}`;
+    try {
+      await setDoc(doc(db, "users", user.uid), { completedCourses: newCompleted }, { merge: true });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, userPath);
+    }
     
     // Update Enrollment
-    const enrollmentId = `${user.uid}_${courseId}`;
-    await setDoc(doc(db, "enrollments", enrollmentId), {
-      progress: 100,
-      status: 'completed'
-    }, { merge: true });
+    const enrollmentPath = `enrollments/${user.uid}_${courseId}`;
+    try {
+      await setDoc(doc(db, "enrollments", `${user.uid}_${courseId}`), {
+        progress: 100,
+        status: 'completed'
+      }, { merge: true });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, enrollmentPath);
+    }
     
     setEnrollments(prev => ({
       ...prev,
@@ -138,6 +254,24 @@ export default function App() {
     }));
   };
 
+  const handleEnrollWithPin = async (courseId: string) => {
+    if (!userProfile?.enrollmentPin) {
+      // If no PIN set, just enroll
+      return enrollInCourse(courseId);
+    }
+
+    setPinModal({ isOpen: true, courseId, error: null, pin: '' });
+  };
+
+  const verifyPinAndEnroll = () => {
+    if (pinModal.pin === userProfile.enrollmentPin) {
+      if (pinModal.courseId) enrollInCourse(pinModal.courseId);
+      setPinModal({ isOpen: false, courseId: null, error: null, pin: '' });
+    } else {
+      setPinModal(prev => ({ ...prev, error: "Invalid Enrollment Password. Access Denied." }));
+    }
+  };
+
   if (loading) return (
     <div className="min-h-screen bg-brand-cream flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
@@ -149,7 +283,74 @@ export default function App() {
 
   // Authenticated Dashboard
   if (user) return (
-    <div className="min-h-screen bg-slate-50 font-sans flex text-slate-900 overflow-hidden">
+    <div className="min-h-screen bg-brand-cream font-sans flex text-slate-900 overflow-hidden">
+      <AnimatePresence>
+        {pinModal.isOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-brand-ink/60 backdrop-blur-md"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white w-full max-w-md p-10 rounded-[40px] shadow-2xl border border-white/20"
+            >
+              <div className="w-16 h-16 bg-brand-blue/10 rounded-3xl flex items-center justify-center mb-6">
+                <BookOpen className="w-8 h-8 text-brand-blue" />
+              </div>
+              <h2 className="text-2xl font-display font-black text-brand-ink tracking-tight mb-2">Authentication Required</h2>
+              <p className="text-brand-muted text-sm font-medium mb-8 leading-relaxed">
+                Please enter your Professional Enrollment PIN/Password to access this curriculum module.
+              </p>
+
+              <div className="space-y-6">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-brand-ink uppercase tracking-widest block pl-1">Enrollment Signature</label>
+                  <input 
+                    type="password" 
+                    placeholder="••••••"
+                    maxLength={6}
+                    value={pinModal.pin}
+                    onChange={(e) => setPinModal(prev => ({ ...prev, pin: e.target.value, error: null }))}
+                    className="w-full px-5 py-4 bg-brand-blue-light/30 border border-brand-border rounded-2xl font-bold text-center text-2xl tracking-[0.5em] outline-none focus:border-brand-blue focus:bg-white transition-all"
+                  />
+                </div>
+
+                {pinModal.error && (
+                  <p className="text-[10px] font-black text-red-500 uppercase tracking-widest text-center animate-shake">{pinModal.error}</p>
+                )}
+
+                <div className="flex gap-3 pt-2">
+                  <button 
+                    onClick={() => setPinModal({ isOpen: false, courseId: null, error: null, pin: '' })}
+                    className="flex-1 py-4 text-[10px] font-black uppercase tracking-widest text-brand-muted hover:text-brand-ink transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={verifyPinAndEnroll}
+                    className="flex-[2] py-4 bg-brand-blue text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-blue-100 hover:bg-brand-blue-dark transition-all active:scale-95"
+                  >
+                    Authenticate & Enroll
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {activeCourse && (
+        <CourseContent 
+          course={activeCourse} 
+          onClose={() => setActiveCourse(null)} 
+          onComplete={markCourseComplete}
+          userName={user.displayName || "Learner"}
+        />
+      )}
       {/* Sidebar Navigation */}
       <aside className="w-72 bg-white border-r border-brand-border flex flex-col h-screen sticky top-0 hidden lg:flex">
         <div className="p-8 flex items-center gap-4">
@@ -163,9 +364,11 @@ export default function App() {
           {[
             { id: 'overview', icon: LayoutDashboard, label: 'Dashboard Home' },
             { id: 'my_courses', icon: GraduationCap, label: 'My Courses' },
+            { id: 'path', icon: Map, label: 'Career Roadmap' },
+            { id: 'interview', icon: MessageSquare, label: 'Mock Interview' },
             { id: 'resume', icon: Search, label: 'Resume Tools' },
             { id: 'jobs', icon: Sparkles, label: 'Job Matching' },
-            { id: 'profile', icon: UserIcon, label: 'Settings' }
+            { id: 'profile', icon: Settings, label: 'Platform Settings' }
           ].map(item => (
             <button 
               key={item.id}
@@ -215,7 +418,7 @@ export default function App() {
               <input 
                 type="text" 
                 placeholder="Search courses, skills, or mentors..." 
-                className="w-full bg-slate-50 border border-brand-border rounded-2xl py-3 pl-12 pr-4 text-sm font-medium outline-none focus:border-brand-blue focus:bg-white transition-all"
+                className="w-full bg-brand-blue-light/30 border border-brand-border rounded-2xl py-3 pl-12 pr-4 text-sm font-medium outline-none focus:border-brand-blue focus:bg-white transition-all"
               />
             </div>
           </div>
@@ -240,7 +443,7 @@ export default function App() {
           </div>
         </header>
 
-        <main className="flex-1 p-10 space-y-8 overflow-y-auto bg-[#fafbfc]">
+        <main className="flex-1 p-10 space-y-8 overflow-y-auto bg-brand-cream/50">
           {dashboardTab === 'profile' ? (
             <div className="space-y-8">
               <header>
@@ -248,7 +451,10 @@ export default function App() {
                 <p className="text-brand-muted text-sm mt-1 font-medium">Fine-tune your professional presence across the SkillHire ecosystem.</p>
               </header>
               <div className="bg-white p-10 rounded-[40px] border border-brand-border shadow-sm">
-                <ProfileEditor user={user} />
+                <ProfileEditor user={user} onUpdate={async () => {
+                  const uDoc = await getDoc(doc(db, "users", user.uid));
+                  if (uDoc.exists()) setUserProfile(uDoc.data());
+                }} />
               </div>
             </div>
           ) : dashboardTab === 'my_courses' ? (
@@ -283,8 +489,9 @@ export default function App() {
                       isEnrolled={true}
                       isCompleted={completedCourses.includes(course.id)}
                       progress={enrollments[course.id]?.progress || 0}
-                      onEnroll={enrollInCourse}
+                      onEnroll={handleEnrollWithPin}
                       onComplete={markCourseComplete}
+                      onView={(c) => setActiveCourse(c)}
                       userName={user.displayName || "Learner"}
                     />
                   ))}
@@ -301,28 +508,82 @@ export default function App() {
                 <ResumeUploader onAnalysisComplete={handleAnalysisComplete} />
               </div>
               {analysis && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 gap-8">
                   <div className="glass p-8 rounded-[32px] space-y-4">
-                    <h3 className="font-black uppercase tracking-widest text-[10px] text-brand-blue">Analysis Insights</h3>
-                    <ul className="space-y-3">
-                      {analysis.feedback.map((f, i) => (
-                        <li key={i} className="text-xs font-medium text-brand-muted flex gap-2">
-                          <span className="text-brand-blue">•</span> {f}
-                        </li>
-                      ))}
-                    </ul>
+                    <h3 className="font-black uppercase tracking-widest text-[10px] text-brand-blue">Summary - {analysis.candidateName || 'Unknown Candidate'}</h3>
+                    <p className="text-sm font-medium text-brand-muted leading-relaxed">{analysis.summary}</p>
+                    <div className="flex gap-4 mt-2">
+                      <div className="bg-brand-cream px-3 py-2 rounded-xl">
+                         <p className="text-xs font-bold text-brand-ink">ATS Match: {analysis.matchPercentage}%</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="glass p-8 rounded-[32px] space-y-4">
-                    <h3 className="font-black uppercase tracking-widest text-[10px] text-brand-blue">Ecosystem Domain</h3>
-                    <p className="text-2xl font-display font-black text-brand-ink">{analysis.matchingDomains[0]}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {analysis.skills.map((s, i) => (
-                        <span key={i} className="px-2 py-1 bg-white rounded-md border text-[9px] font-black uppercase tracking-widest">{s}</span>
-                      ))}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="glass p-8 rounded-[32px] space-y-4">
+                      <h3 className="font-black uppercase tracking-widest text-[10px] text-brand-blue">Strengths & Keywords</h3>
+                      <div className="space-y-3">
+                        <p className="text-xs font-bold text-brand-ink mt-2">Top Strengths</p>
+                        <ul className="space-y-2">
+                          {analysis.topStrengths?.map((s, i) => (
+                            <li key={i} className="text-xs font-medium text-brand-muted flex gap-2">
+                              <span className="text-green-500">•</span> {s}
+                            </li>
+                          ))}
+                        </ul>
+                        <p className="text-xs font-bold text-brand-ink mt-4">Found Keywords</p>
+                        <div className="flex flex-wrap gap-1">
+                           {analysis.keywordAnalysis?.foundKeywords?.map((kw, i) => (
+                             <span key={i} className="text-[9px] px-2 py-1 bg-green-50 text-green-700 rounded border border-green-200">{kw}</span>
+                           ))}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="glass p-8 rounded-[32px] space-y-4">
+                      <h3 className="font-black uppercase tracking-widest text-[10px] text-brand-blue">Feedback & Improvements</h3>
+                      <div className="space-y-3">
+                        <ul className="space-y-2">
+                          {analysis.actionableImprovements?.map((f, i) => (
+                            <li key={i} className="text-xs font-medium text-brand-muted flex gap-2">
+                              <span className="text-brand-blue">•</span> {f}
+                            </li>
+                          ))}
+                        </ul>
+                        {analysis.formattingIssues?.length > 0 && (
+                          <>
+                            <p className="text-xs font-bold text-red-500 mt-4">Formatting Issues</p>
+                            <ul className="space-y-2">
+                              {analysis.formattingIssues.map((issue, i) => (
+                                <li key={i} className="text-xs font-medium text-red-400 flex gap-2">
+                                  <span>⚠</span> {issue}
+                                </li>
+                              ))}
+                            </ul>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
+            </div>
+          ) : dashboardTab === 'path' ? (
+            <div className="space-y-8 max-w-5xl">
+              <header>
+                <h1 className="text-3xl font-display font-black text-brand-ink tracking-tight">Smart Career Roadmap</h1>
+                <p className="text-brand-muted text-sm mt-1 font-medium">AI-driven learning paths tailored to your current skill topology and target roles.</p>
+              </header>
+              <CareerPath 
+                skills={analysis?.keywordAnalysis?.foundKeywords || []} 
+                currentDomain={'Web Development'} 
+              />
+            </div>
+          ) : dashboardTab === 'interview' ? (
+            <div className="space-y-8 max-w-5xl">
+              <header>
+                <h1 className="text-3xl font-display font-black text-brand-ink tracking-tight">Interview Simulation</h1>
+                <p className="text-brand-muted text-sm mt-1 font-medium">Test your depth against our adversarial AI interviewer. Zero-risk practice environment.</p>
+              </header>
+              <MockInterview />
             </div>
           ) : dashboardTab === 'jobs' ? (
             <div className="space-y-8 max-w-5xl">
@@ -331,7 +592,7 @@ export default function App() {
                 <p className="text-brand-muted text-sm mt-1 font-medium">Current matches based on your validated skill topology.</p>
               </header>
               <div className="glass p-10 rounded-[40px]">
-                <JobRecommendations jobs={matchingJobs} domain={analysis?.matchingDomains[0] || 'General'} />
+                <JobRecommendations jobs={matchingJobs} domain={'General Tech'} />
               </div>
             </div>
           ) : (
@@ -366,8 +627,9 @@ export default function App() {
                       isEnrolled={!!enrollments[course.id]}
                       isCompleted={completedCourses.includes(course.id)}
                       progress={enrollments[course.id]?.progress || 0}
-                      onEnroll={enrollInCourse}
+                      onEnroll={handleEnrollWithPin}
                       onComplete={markCourseComplete}
+                      onView={(c) => setActiveCourse(c)}
                       userName={user.displayName || "Learner"}
                     />
                   ))}
@@ -380,14 +642,14 @@ export default function App() {
               {/* Score Chart Widget */}
               <div className="glass p-8 rounded-[40px] border border-white/50 flex flex-col items-center text-center space-y-6">
                 <h3 className="text-sm font-black uppercase tracking-widest text-brand-ink">Resume Score</h3>
-                <ResumeScoreChart score={analysis?.score || 0} />
+                <ResumeScoreChart score={analysis?.atsScore || 0} />
                 <div className="space-y-2">
                   <p className="text-xs font-black text-brand-ink">
                     {analysis ? 'Optimized for Hiring' : 'Analysis Pending'}
                   </p>
                   <p className="text-[10px] font-medium text-brand-muted max-w-[180px]">
                     {analysis 
-                      ? `Matching ${analysis.skills.length} core skills in ${analysis.matchingDomains[0]}.` 
+                      ? `Your resume has been successfully analyzed and scored for compatibility.` 
                       : 'Upload your latest resume to analyze your ecosystem positioning.'}
                   </p>
                 </div>
@@ -409,11 +671,11 @@ export default function App() {
               <div className="glass p-8 rounded-[40px] border border-white/50 space-y-6">
                 <h3 className="text-sm font-black uppercase tracking-widest text-brand-ink">Platform Stats</h3>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-slate-50 p-4 rounded-3xl border border-brand-border/50">
+                  <div className="bg-brand-blue-light/40 p-4 rounded-3xl border border-brand-border/50">
                     <p className="text-[9px] font-black uppercase tracking-widest text-brand-muted mb-1">Courses</p>
                     <p className="text-xl font-display font-black text-brand-ink">{completedCourses.length}</p>
                   </div>
-                  <div className="bg-slate-50 p-4 rounded-3xl border border-brand-border/50">
+                  <div className="bg-brand-blue-light/40 p-4 rounded-3xl border border-brand-border/50">
                     <p className="text-[9px] font-black uppercase tracking-widest text-brand-muted mb-1">XP Points</p>
                     <p className="text-xl font-display font-black text-brand-ink">
                       {completedCourses.reduce((acc, id) => acc + (COURSES.find(c => c.id === id)?.points || 0), 0)}
@@ -433,7 +695,7 @@ export default function App() {
                     {completedCourses.slice(0, 3).map(courseId => {
                       const course = COURSES.find(c => c.id === courseId);
                       return course ? (
-                        <div key={courseId} className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-brand-border/50 group hover:border-brand-blue transition-colors cursor-pointer">
+                        <div key={courseId} className="flex items-center gap-3 p-3 bg-white/80 rounded-2xl border border-brand-border/50 group hover:border-brand-blue transition-colors cursor-pointer">
                           <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center">
                             <CheckCircle className="w-5 h-5 text-green-500" />
                           </div>
@@ -558,89 +820,41 @@ export default function App() {
     </div>
   );
 
-  // Auth Card Template
-  const renderAuthPage = (type: 'login' | 'register') => (
-    <div className="min-h-screen bg-[#0a1628] flex items-center justify-center relative overflow-hidden font-sans">
-      {/* Background Decorative Elements */}
-      <div className="absolute top-[-160px] right-[-100px] w-[500px] h-[500px] bg-brand-blue/10 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-[-120px] left-[-80px] w-[380px] h-[380px] bg-brand-accent/5 blur-[100px] rounded-full pointer-events-none" />
-      
-      <button 
-        onClick={() => setView('home')}
-        className="fixed top-6 left-8 flex items-center gap-2 text-white/60 font-bold text-sm hover:text-white transition-colors"
-      >
-        <LayoutDashboard className="w-4 h-4 rotate-180" />
-        Back to Home
-      </button>
-
-      <motion.div 
-        initial={{ opacity: 0, y: 20, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        className="bg-white w-full max-w-[450px] m-4 p-12 rounded-[32px] shadow-2xl relative z-10"
-      >
-        <div className="text-center font-display font-black text-xl tracking-tighter text-brand-ink mb-10">
-          Skill<span className="text-brand-blue">toHire</span>
-        </div>
-
-        <h2 className="font-display font-extrabold text-3xl tracking-tight text-brand-ink leading-none">
-          {type === 'login' ? 'Welcome back' : 'Create account'}
-        </h2>
-        <p className="text-brand-muted text-sm font-medium mt-2 mb-8">
-          {type === 'login' ? 'Sign in to continue your journey' : 'Join thousands building their careers'}
-        </p>
-
-        <button 
-          onClick={loginWithGoogle}
-          className="w-full py-3.5 bg-white border border-slate-200 text-[#3c4043] rounded-xl font-bold flex items-center justify-center gap-3 hover:bg-slate-50 transition-all active:scale-95 shadow-sm border-b-2"
-        >
-          <img src="https://www.google.com/favicon.ico" className="w-5 h-5" alt="Google" />
-          Continue with Google
-        </button>
-
-        <div className="flex items-center gap-4 my-6">
-          <div className="flex-1 h-px bg-brand-border/50" />
-          <span className="text-[10px] font-black text-brand-muted uppercase tracking-widest">or email interface</span>
-          <div className="flex-1 h-px bg-brand-border/50" />
-        </div>
-
-        <div className="space-y-4">
-          {type === 'register' && (
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-brand-ink uppercase tracking-widest">Full Name</label>
-              <input type="text" placeholder="Your Name" className="w-full px-4 py-3 bg-slate-50 border border-brand-border rounded-xl font-medium outline-none focus:border-brand-blue transition-colors" />
-            </div>
-          )}
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-brand-ink uppercase tracking-widest">Email Address</label>
-            <input type="email" placeholder="you@example.com" className="w-full px-4 py-3 bg-slate-50 border border-brand-border rounded-xl font-medium outline-none focus:border-brand-blue transition-colors" />
-          </div>
-          <div className="space-y-1.5">
-            <div className="flex justify-between items-center">
-              <label className="text-[10px] font-black text-brand-ink uppercase tracking-widest">Password</label>
-              {type === 'login' && <span className="text-[10px] font-bold text-brand-blue cursor-pointer hover:underline">Forgot?</span>}
-            </div>
-            <input type="password" placeholder="••••••••" className="w-full px-4 py-3 bg-slate-50 border border-brand-border rounded-xl font-medium outline-none focus:border-brand-blue transition-colors" />
-          </div>
-
-          <button className="w-full py-4 bg-brand-blue text-white rounded-xl font-black uppercase tracking-widest text-xs shadow-lg shadow-blue-100 hover:bg-brand-blue-dark transition-all active:scale-95 mt-4">
-            {type === 'login' ? 'Sign In' : 'Create Account'}
-          </button>
-        </div>
-
-        <div className="mt-8 text-center text-xs font-bold text-brand-muted">
-          {type === 'login' ? (
-            <>New here? <span onClick={() => setView('register')} className="text-brand-blue cursor-pointer hover:underline">Create an account</span></>
-          ) : (
-            <>Already have an account? <span onClick={() => setView('login')} className="text-brand-blue cursor-pointer hover:underline">Sign in</span></>
-          )}
-        </div>
-      </motion.div>
-    </div>
+  if (view === 'login') return (
+    <AuthPage 
+      type="login" 
+      setView={setView}
+      authEmail={authEmail}
+      setAuthEmail={setAuthEmail}
+      authPassword={authPassword}
+      setAuthPassword={setAuthPassword}
+      authName={authName}
+      setAuthName={setAuthName}
+      authError={authError}
+      authLoading={authLoading}
+      handleGoogleLogin={handleGoogleLogin}
+      handleEmailAuth={handleEmailAuth}
+    />
   );
-
-  if (view === 'login') return renderAuthPage('login');
-  if (view === 'register') return renderAuthPage('register');
+  
+  if (view === 'register') return (
+    <AuthPage 
+      type="register" 
+      setView={setView}
+      authEmail={authEmail}
+      setAuthEmail={setAuthEmail}
+      authPassword={authPassword}
+      setAuthPassword={setAuthPassword}
+      authName={authName}
+      setAuthName={setAuthName}
+      authError={authError}
+      authLoading={authLoading}
+      handleGoogleLogin={handleGoogleLogin}
+      handleEmailAuth={handleEmailAuth}
+    />
+  );
   
   return null;
 }
+
 
