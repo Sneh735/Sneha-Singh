@@ -91,9 +91,12 @@ export default function ResumeUploader({ onAnalysisComplete }: ResumeUploaderPro
       </div>
       
       {error && (
-        <div className="flex items-center gap-2 p-4 bg-red-50 text-red-600 rounded-2xl text-xs font-black uppercase tracking-widest animate-shake">
-          <AlertCircle className="w-4 h-4" />
-          <span>{error}</span>
+        <div className="flex items-start gap-4 p-6 bg-red-50 text-red-700 rounded-[32px] text-xs font-medium border border-red-100 shadow-lg animate-shake max-w-md">
+          <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+          <div className="space-y-2">
+            <p className="font-black uppercase tracking-widest text-red-800">Analysis Failed</p>
+            <p className="whitespace-pre-wrap leading-relaxed">{error}</p>
+          </div>
         </div>
       )}
     </div>

@@ -30,9 +30,9 @@ export default function CareerPath({ skills, currentDomain }: CareerPathProps) {
     try {
       const data = await generateRoadmap(skills, targetDomain);
       setRoadmap(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError("Failing to connect to the Career Oracle. Please try again.");
+      setError(err.message || "Failing to connect to the Career Oracle. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -70,8 +70,12 @@ export default function CareerPath({ skills, currentDomain }: CareerPathProps) {
       </div>
 
       {error && (
-        <div className="p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl flex items-center gap-3 text-sm font-bold">
-          <AlertCircle className="w-5 h-5" /> {error}
+        <div className="p-6 bg-red-50 border border-red-100 text-red-700 rounded-[32px] flex items-start gap-4 text-xs font-medium whitespace-pre-wrap leading-relaxed shadow-sm animate-shake">
+          <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <p className="font-black uppercase tracking-widest text-red-800">Oracle Interruption</p>
+            <p>{error}</p>
+          </div>
         </div>
       )}
 

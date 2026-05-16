@@ -11,7 +11,6 @@ import { collection, query, where, getDocs, doc, setDoc, getDoc } from 'firebase
 import ResumeUploader from './components/ResumeUploader';
 import AuthPage from './components/AuthPage';
 import { CourseCard } from './components/CourseCard';
-import JobRecommendations from './components/JobRecommendations';
 import ProfileEditor from './components/ProfileEditor';
 import CourseContent from './components/CourseContent';
 import { ResumeAnalysis } from './services/ai';
@@ -48,11 +47,10 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'home' | 'login' | 'register'>('home');
-  const [dashboardTab, setDashboardTab] = useState<'overview' | 'profile' | 'my_courses' | 'path' | 'interview' | 'resume' | 'jobs'>('overview');
+  const [dashboardTab, setDashboardTab] = useState<'overview' | 'profile' | 'my_courses' | 'path' | 'interview' | 'resume'>('overview');
   const [analysis, setAnalysis] = useState<ResumeAnalysis | null>(null);
   const [completedCourses, setCompletedCourses] = useState<string[]>([]);
   const [enrollments, setEnrollments] = useState<Record<string, { progress: number, status: string }>>({});
-  const [matchingJobs, setMatchingJobs] = useState<any[]>([]);
   const [activeCourse, setActiveCourse] = useState<Course | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [firebaseError, setFirebaseError] = useState<{ path: string, message: string } | null>(null);
@@ -134,14 +132,6 @@ export default function App() {
 
   const handleAnalysisComplete = async (data: ResumeAnalysis) => {
     setAnalysis(data);
-    // Fetch jobs from backend
-    const res = await fetch('/api/jobs/match', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ skills: data.keywordAnalysis?.foundKeywords || [], domain: 'General Tech' })
-    });
-    const result = await res.json();
-    setMatchingJobs(result.matches);
   };
 
   const handleEmailAuth = async (e: React.FormEvent, type: 'login' | 'register') => {
@@ -383,7 +373,6 @@ export default function App() {
             { id: 'path', icon: Map, label: 'Career Roadmap' },
             { id: 'interview', icon: MessageSquare, label: 'Mock Interview' },
             { id: 'resume', icon: Search, label: 'Resume Tools' },
-            { id: 'jobs', icon: Sparkles, label: 'Job Matching' },
             { id: 'profile', icon: Settings, label: 'Platform Settings' }
           ].map(item => (
             <button 
@@ -634,16 +623,6 @@ export default function App() {
               </header>
               <MockInterview />
             </div>
-          ) : dashboardTab === 'jobs' ? (
-            <div className="space-y-8 max-w-5xl">
-              <header>
-                <h1 className="text-3xl font-display font-black text-brand-ink tracking-tight">Market Synchronization</h1>
-                <p className="text-brand-muted text-sm mt-1 font-medium">Current matches based on your validated skill topology.</p>
-              </header>
-              <div className="glass p-10 rounded-[40px]">
-                <JobRecommendations jobs={matchingJobs} domain={'General Tech'} />
-              </div>
-            </div>
           ) : (
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             {/* Left Column: Learning & Courses */}
@@ -653,7 +632,6 @@ export default function App() {
                   <h1 className="text-4xl font-display font-black text-brand-ink tracking-tight">
                     Welcome back, {user.displayName?.split(' ')[0]}
                   </h1>
-                  <p className="text-brand-muted text-sm font-medium">Your professional ecosystem is current. 4 new job matches found.</p>
                 </div>
               </header>
 
@@ -852,7 +830,6 @@ export default function App() {
         {[
           { icon: '🤖', label: 'AI Skill Analysis', sub: 'Identify gaps instantly' },
           { icon: '📚', label: 'Smart Learning', sub: 'Personalised roadmaps' },
-          { icon: '💼', label: 'Job Matching', sub: 'Real career alignment' },
           { icon: '🎯', label: 'Interview Prep', sub: 'AI mock simulations' }
         ].map((feat, i) => (
           <div key={i} className="flex items-center gap-4 group">

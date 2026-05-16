@@ -47,21 +47,6 @@
       },
       "required": ["id", "userId", "courseId"]
     },
-    "Job": {
-      "title": "Job",
-      "description": "Available job opportunities matched with skills",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "title": { "type": "string" },
-        "company": { "type": "string" },
-        "domain": { "type": "string" },
-        "requiredSkills": { "type": "array", "items": { "type": "string" } },
-        "minExperience": { "type": "number" },
-        "location": { "type": "string" }
-      },
-      "required": ["id", "title", "company", "domain"]
-    },
     "Enrollment": {
       "title": "Enrollment",
       "description": "User enrollment in a specific course",
@@ -121,10 +106,6 @@
     "/certificates/{certId}": {
       "schema": "Certificate",
       "description": "Issued certificates log"
-    },
-    "/jobs/{jobId}": {
-      "schema": "Job",
-      "description": "Job database for matching"
     },
     "/skill_analysis/{analysisId}": {
       "schema": "SkillAnalysis",

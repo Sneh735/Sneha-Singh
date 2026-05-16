@@ -42,9 +42,9 @@ export default function MockInterview() {
     try {
       const response = await getInterviewFeedback(topic, []);
       setMessages([{ role: 'assistant', text: response.question }]);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError("Failed to start mock interview. Please try again.");
+      setError(err.message || "Failed to start mock interview. Please try again.");
       setStarted(false);
     } finally {
       setLoading(false);
@@ -71,9 +71,9 @@ export default function MockInterview() {
         ...prev, 
         { role: 'assistant', text: response.question, feedback: response.feedback }
       ]);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError("Failed to get response from AI. Please try again.");
+      setError(err.message || "Failed to get response from AI. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -84,7 +84,7 @@ export default function MockInterview() {
     setStarted(false);
   };
 
-  const [topics] = useState(['Web Development (HTML, CSS, JS)', 'Data Structures & Algorithms (DSA)', 'Object-Oriented Programming (OOP)', 'Machine Learning (ML) & AI', 'Project Management', 'System Architecture', 'React/Frontend', 'Node.js/Backend']);
+  const [topics] = useState(['Web Development (HTML, CSS, JS)', 'Data Structures & Algorithms (DSA)', 'Object-Oriented Programming (OOP)', 'Machine Learning (ML) & AI', 'Project Management', 'System Architecture', 'React/Frontend', 'Node.js/Backend', 'Java Core', 'Advanced Python', 'Data Science', 'AI/ML Engineering', 'React Hooks', 'Node.js Backend']);
   const [topicSearch, setTopicSearch] = useState('');
 
   const filteredTopics = topics.filter(t => t.toLowerCase().includes(topicSearch.toLowerCase()));
@@ -219,10 +219,11 @@ export default function MockInterview() {
               animate={{ opacity: 1 }} 
               className="flex justify-center my-4"
             >
-              <div className="grid place-items-center gap-2 text-red-500 font-bold bg-red-50 py-2 px-4 rounded-xl border border-red-200">
-                <div className="flex gap-2">
-                  <AlertCircle className="w-4 h-4" />
-                  <span className="text-xs">{error}</span>
+              <div className="flex items-start gap-4 p-6 bg-red-50 text-red-700 rounded-[32px] text-xs font-medium border border-red-100 shadow-lg animate-shake max-w-md">
+                <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                <div className="space-y-2">
+                  <p className="font-black uppercase tracking-widest text-red-800">System Link Failed</p>
+                  <p className="whitespace-pre-wrap leading-relaxed">{error}</p>
                 </div>
               </div>
             </motion.div>
