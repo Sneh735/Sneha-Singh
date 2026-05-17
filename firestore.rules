@@ -10,60 +10,41 @@ service cloud.firestore {
     function isSignedIn() { return request.auth != null; }
     function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
     function incoming() { return request.resource.data; }
-    function existing() { return resource.data; }
-    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
 
-    // --- Validation Blueprints ---
-    function isValidUser(data) {
-      return data.uid is string && data.uid == request.auth.uid 
-          && data.email is string && data.email == request.auth.token.email
-          && (data.get('displayName', '') is string && data.get('displayName', '').size() < 256)
-          && (data.get('completedCourses', []) is list && data.get('completedCourses', []).size() <= 100);
-    }
+    // --- Collection Rules ---
 
-    // --- Collection Matches ---
     match /users/{userId} {
-      allow get: if isOwner(userId);
-      allow create: if isOwner(userId) && isValidUser(incoming());
-      allow update: if isOwner(userId) 
-        && isValidUser(incoming())
-        && (
-          incoming().diff(existing()).affectedKeys().hasOnly(['completedCourses']) ||
-          incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'photoURL', 'keySkills', 'experience', 'education', 'bio', 'phoneNumber', 'graduationDetails', 'dob', 'enrollmentPin'])
-        );
+      allow get, write: if isOwner(userId);
     }
 
     match /courses/{courseId} {
-      allow read: if isSignedIn();
+      allow read: if true;
+      allow create: if isSignedIn();
     }
 
-    match /enrollments/{enrollmentId} {
-      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+    match /enrollments/{id} {
+      allow list, get: if isSignedIn() && resource.data.userId == request.auth.uid;
       allow create: if isSignedIn() && incoming().userId == request.auth.uid;
-      allow update: if isSignedIn() && resource.data.userId == request.auth.uid 
-        && (
-          incoming().diff(existing()).affectedKeys().hasOnly(['progress', 'status'])
-        );
-      allow delete: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
 
-    match /certificates/{certId} {
+    match /notifications/{id} {
       allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid);
       allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.userId == request.auth.uid;
     }
 
-    match /skill_analysis/{analysisId} {
-      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+    match /certificates/{id} {
+      allow list, get, create: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid || incoming().userId == request.auth.uid);
     }
 
-    match /interview_history/{interviewId} {
-      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow get: if isSignedIn() && resource.data.userId == request.auth.uid;
-      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+    match /skill_analysis/{id} {
+      allow list, get, create: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid || incoming().userId == request.auth.uid);
+    }
+
+    match /interview_history/{id} {
+      allow list, get, create: if isSignedIn() && (resource == null || resource.data.userId == request.auth.uid || incoming().userId == request.auth.uid);
     }
   }
 }

@@ -7,7 +7,19 @@ import {
   signInWithEmailAndPassword, 
   updateProfile 
 } from 'firebase/auth';
-import { collection, query, where, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
+import { 
+  collection, 
+  query, 
+  where, 
+  getDocs, 
+  doc, 
+  setDoc, 
+  getDoc, 
+  onSnapshot, 
+  orderBy, 
+  updateDoc,
+  limit
+} from 'firebase/firestore';
 import ResumeUploader from './components/ResumeUploader';
 import AuthPage from './components/AuthPage';
 import { CourseCard } from './components/CourseCard';
@@ -15,7 +27,7 @@ import ProfileEditor from './components/ProfileEditor';
 import CourseContent from './components/CourseContent';
 import { ResumeAnalysis } from './services/ai';
 import { Course } from './types';
-import { cn } from './lib/utils';
+import { cn, getAvatarUrl } from './lib/utils';
 import firebaseConfigData from '../firebase-applet-config.json';
 import { 
   GraduationCap, 
@@ -68,67 +80,164 @@ export default function App() {
   const [authError, setAuthError] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(false);
 
+  // Search & Notifications state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [searchResults, setSearchResults] = useState<Course[]>([]);
+  const [dbCourses, setDbCourses] = useState<Course[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  // Fetch courses from DB
+  useEffect(() => {
+    const fetchCourses = async () => {
+      // Always start with local COURSES to ensure UI is immediate
+      setDbCourses(COURSES);
+      
+      try {
+        const coursesSnap = await getDocs(collection(db, "courses"));
+        if (!coursesSnap.empty) {
+          const coursesList: Course[] = [];
+          coursesSnap.forEach(d => coursesList.push(d.data() as Course));
+          setDbCourses(coursesList);
+        }
+      } catch (err: any) {
+        // Silent fail for courses, we already have the local fallback
+        if (!err.message?.toLowerCase().includes("permission")) {
+           console.error("Course fetch error:", err);
+        }
+      }
+    };
+    fetchCourses();
+  }, [user]); // Re-fetch on login state change if needed, but works for guest too
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (debouncedSearch.trim().length > 1) {
+      const results = dbCourses.filter(course => 
+        course.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        course.description.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        course.domain.toLowerCase().includes(debouncedSearch.toLowerCase())
+      );
+      setSearchResults(results);
+    } else {
+      setSearchResults([]);
+    }
+  }, [debouncedSearch, dbCourses]);
+
+  // Notifications Listener
+  useEffect(() => {
+    if (!user) {
+      setNotifications([]);
+      return;
+    }
+
+    const notifPath = "notifications";
+    const notifQuery = query(
+      collection(db, notifPath),
+      where("userId", "==", user.uid),
+      limit(20) // Removed orderBy to avoid requiring index immediately
+    );
+    
+    const unsubscribe = onSnapshot(notifQuery, (snapshot) => {
+      const notifs: any[] = [];
+      snapshot.forEach(d => notifs.push({ id: d.id, ...d.data() }));
+      setNotifications(notifs);
+    }, (err: any) => {
+      console.error("Notifications fetch error:", err);
+      // Don't show full screen error for background notification polling
+      // but log it enough to be caught by the Diagnostic tool
+      if (err.message.toLowerCase().includes("permission")) {
+        console.warn("Permission denied for notifications. Verify rules and index.");
+      }
+    });
+
+    return () => unsubscribe();
+  }, [user]);
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
       setUser(u);
       if (u) {
-        // Fetch user progress
-        const userPath = `users/${u.uid}`;
+        setLoading(true);
         try {
-          const userRef = doc(db, "users", u.uid);
-          const userDoc = await getDoc(userRef);
-          
-          if (userDoc.exists()) {
-            const data = userDoc.data();
+          // Parallel fetch for speed
+          const [profileSnap, enrollmentsSnap] = await Promise.all([
+            getDoc(doc(db, "users", u.uid)),
+            getDocs(query(collection(db, "enrollments"), where("userId", "==", u.uid)))
+          ]);
+
+          // Handle Profile
+          if (profileSnap.exists()) {
+            const data = profileSnap.data();
             setCompletedCourses(data.completedCourses || []);
             setUserProfile(data);
-            
-            // Fetch Enrollments
-            const enrollPath = "enrollments";
-            try {
-              const enrollmentsQuery = query(collection(db, enrollPath), where("userId", "==", u.uid));
-              const enrollmentsSnap = await getDocs(enrollmentsQuery);
-              const enrollMap: Record<string, any> = {};
-              enrollmentsSnap.forEach(doc => {
-                const d = doc.data();
-                enrollMap[d.courseId] = { progress: d.progress, status: d.status };
-              });
-              setEnrollments(enrollMap);
-            } catch (err: any) {
-              setFirebaseError({ path: enrollPath, message: err.message });
-              handleFirestoreError(err, OperationType.LIST, enrollPath);
-            }
           } else {
-            // Initialize user document with mandatory fields
+            console.log("No profile found, creating default for:", u.uid);
             const newUser = {
               uid: u.uid,
-              email: u.email,
-              displayName: u.displayName,
-              photoURL: u.photoURL,
+              email: u.email || "",
+              displayName: u.displayName || "Learner",
+              photoURL: u.photoURL || "",
+              linkedin: '',
+              github: '',
+              resumeUrl: '',
+              bio: '',
+              phoneNumber: '',
+              education: '',
+              graduationDetails: '',
+              dob: '',
+              enrollmentPin: '',
+              experience: 0,
+              keySkills: [],
               completedCourses: [],
-              createdAt: new Date().toISOString()
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
             };
-            try {
-              await setDoc(userRef, newUser);
-            } catch (err: any) {
-              setFirebaseError({ path: userPath, message: err.message });
-              handleFirestoreError(err, OperationType.CREATE, userPath);
-            }
+            await setDoc(doc(db, "users", u.uid), newUser);
             setCompletedCourses([]);
+            setUserProfile(newUser);
           }
+
+          // Handle Enrollments
+          const enrollMap: Record<string, any> = {};
+          enrollmentsSnap.forEach(snap => {
+            const d = snap.data();
+            enrollMap[d.courseId] = { progress: d.progress, status: d.status };
+          });
+          setEnrollments(enrollMap);
+
         } catch (err: any) {
-          try {
-            setFirebaseError({ path: userPath, message: err.message });
-            handleFirestoreError(err, OperationType.GET, userPath);
-          } catch (e) {
-            console.error("Initialization error:", e);
+          console.error("Initialization error:", err);
+          if (err.message?.toLowerCase().includes("permission")) {
+            setFirebaseError({ path: "Initialization", message: "Permission Denied. Please check your Firestore rules." });
           }
+          handleFirestoreError(err, OperationType.GET, "app_init");
+        } finally {
+          setLoading(false);
         }
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
     return () => unsubscribe();
   }, []);
+
+  const markNotificationRead = async (id: string) => {
+    const notifRef = doc(db, "notifications", id);
+    try {
+      await updateDoc(notifRef, { read: true });
+    } catch (err) {
+      console.error("Failed to mark notification as read", err);
+    }
+  };
 
   const handleAnalysisComplete = async (data: ResumeAnalysis) => {
     setAnalysis(data);
@@ -142,23 +251,7 @@ export default function App() {
       if (type === 'register') {
         const userCredential = await createUserWithEmailAndPassword(auth, authEmail, authPassword);
         await updateProfile(userCredential.user, { displayName: authName });
-        
-        // Explicitly create user doc here
-        const userRef = doc(db, "users", userCredential.user.uid);
-        await setDoc(userRef, {
-          uid: userCredential.user.uid,
-          email: authEmail,
-          displayName: authName,
-          photoURL: `https://api.dicebear.com/7.x/avataaars/svg?seed=${authEmail}`,
-          completedCourses: [],
-          createdAt: new Date().toISOString(),
-          bio: '',
-          phoneNumber: '',
-          education: '',
-          graduationDetails: '',
-          dob: '',
-          enrollmentPin: ''
-        });
+        // The onAuthStateChanged listener will handle creating the Firestore document
       } else {
         await signInWithEmailAndPassword(auth, authEmail, authPassword);
       }
@@ -395,9 +488,9 @@ export default function App() {
           <div className="glass p-4 rounded-3xl relative group overflow-hidden">
             <div className="flex items-center gap-3 relative z-10">
               <img 
-                src={user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`} 
+                src={getAvatarUrl(userProfile?.photoURL || user.photoURL, userProfile?.displayName || user.displayName)} 
                 referrerPolicy="no-referrer"
-                className="w-10 h-10 rounded-full border-2 border-white shadow-sm"
+                className="w-10 h-10 rounded-full border-2 border-white shadow-sm object-cover"
                 alt="Profile"
               />
               <div className="flex-1 overflow-hidden">
@@ -423,25 +516,114 @@ export default function App() {
               <input 
                 type="text" 
                 placeholder="Search courses, skills, or mentors..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-brand-blue-light/30 border border-brand-border rounded-2xl py-3 pl-12 pr-4 text-sm font-medium outline-none focus:border-brand-blue focus:bg-white transition-all"
               />
+              {searchResults.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-3xl border border-brand-border shadow-2xl p-4 space-y-2 max-h-96 overflow-y-auto z-50">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-brand-muted px-2 mb-2">Search Results</p>
+                  {searchResults.map(course => (
+                    <button 
+                      key={course.id}
+                      onClick={() => {
+                        setActiveCourse(course);
+                        setSearchQuery('');
+                      }}
+                      className="w-full flex items-center gap-4 p-3 hover:bg-brand-blue-light/30 rounded-2xl transition-all text-left"
+                    >
+                      <div className="w-10 h-10 bg-brand-blue/10 rounded-xl flex items-center justify-center shrink-0">
+                        <BookOpen className="w-5 h-5 text-brand-blue" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-black text-brand-ink truncate">{course.title}</p>
+                        <p className="text-[10px] font-medium text-brand-muted truncate">{course.domain} • {course.duration}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-6 ml-8">
-            <button className="relative p-2 text-brand-muted hover:text-brand-ink transition-colors">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
-            </button>
+            <div className="relative">
+              <button 
+                onClick={() => setShowNotifications(!showNotifications)}
+                className={cn(
+                  "relative p-2 text-brand-muted hover:text-brand-ink transition-colors rounded-xl",
+                  showNotifications && "bg-brand-blue-light/50 text-brand-blue"
+                )}
+              >
+                <Bell className="w-5 h-5" />
+                {notifications.filter(n => !n.read).length > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
+                )}
+              </button>
+              
+              <AnimatePresence>
+                {showNotifications && (
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                    className="absolute top-full right-0 mt-4 w-80 bg-white rounded-3xl border border-brand-border shadow-2xl overflow-hidden z-50"
+                  >
+                    <div className="p-4 border-b border-brand-border bg-brand-cream/30 flex justify-between items-center">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-brand-ink">Notifications</p>
+                      <button 
+                        onClick={() => setShowNotifications(false)}
+                        className="text-[10px] font-black uppercase tracking-widest text-brand-muted hover:text-brand-ink"
+                      >
+                        Close
+                      </button>
+                    </div>
+                    <div className="max-h-96 overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <div className="p-10 text-center space-y-2">
+                          <p className="text-xs font-bold text-brand-ink">All caught up!</p>
+                          <p className="text-[10px] font-medium text-brand-muted">No new updates right now.</p>
+                        </div>
+                      ) : (
+                        notifications.map(n => (
+                          <div 
+                            key={n.id} 
+                            onClick={() => markNotificationRead(n.id)}
+                            className={cn(
+                              "p-4 border-b border-brand-border last:border-0 cursor-pointer transition-colors",
+                              n.read ? "opacity-60" : "bg-brand-blue-light/10"
+                            )}
+                          >
+                            <div className="flex gap-3">
+                              <div className={cn(
+                                "w-2 h-2 rounded-full mt-1.5 shrink-0",
+                                n.read ? "bg-transparent" : "bg-brand-blue"
+                              )} />
+                              <div className="space-y-1">
+                                <p className="text-xs font-black text-brand-ink leading-tight">{n.title}</p>
+                                <p className="text-[10px] font-medium text-brand-muted leading-relaxed">{n.message}</p>
+                                <p className="text-[8px] font-black text-brand-muted/50 uppercase tracking-widest">
+                                  {new Date(n.createdAt).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
             <div className="h-8 w-px bg-brand-border" />
             <button onClick={() => setDashboardTab('profile')} className="flex items-center gap-3 group">
               <div className="text-right hidden sm:block">
-                <p className="text-xs font-black text-brand-ink leading-none">{user.displayName}</p>
+                <p className="text-xs font-black text-brand-ink leading-none">{userProfile?.displayName || user.displayName}</p>
                 <p className="text-[10px] font-bold text-brand-muted uppercase tracking-widest mt-1">Student</p>
               </div>
               <img 
-                src={user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`} 
+                src={getAvatarUrl(userProfile?.photoURL || user.photoURL, userProfile?.displayName || user.displayName)} 
                 referrerPolicy="no-referrer"
-                className="w-10 h-10 rounded-full border-2 border-brand-blue/20 group-hover:border-brand-blue transition-colors"
+                className="w-10 h-10 rounded-full border-2 border-brand-blue/20 group-hover:border-brand-blue transition-colors object-cover"
                 alt="Profile"
               />
             </button>
@@ -454,7 +636,7 @@ export default function App() {
               <div className="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center shrink-0">
                 <Settings className="w-6 h-6 text-red-600" />
               </div>
-              <div className="space-y-2 flex-1">
+              <div className="space-y-4 flex-1">
                 <h3 className="text-lg font-black text-red-900 leading-tight">Firebase Security Rules Required</h3>
                 <p className="text-sm text-red-700 font-medium leading-relaxed">
                   Your project <span className="font-bold underline">[{firebaseConfigData.projectId}]</span> returned a <span className="font-mono bg-red-100 px-1 rounded px-1">PERMISSION_DENIED</span> error for path: <span className="font-mono bg-red-100 px-1 rounded">/{firebaseError.path}</span>. 
@@ -462,7 +644,18 @@ export default function App() {
                   Since this is your own Firebase project, you must **manually** deploy the security rules. 
                   Visit the <a href={`https://console.firebase.google.com/project/${firebaseConfigData.projectId}/firestore/rules`} target="_blank" rel="noreferrer" className="underline font-bold hover:text-red-900">Firestore Rules Console</a> and paste the required rules provided in the chat.
                 </p>
-                <div className="flex gap-4 pt-2">
+                
+                <div className="bg-brand-ink/5 p-4 rounded-2xl space-y-3">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-brand-ink">Required Configuration:</p>
+                  <ul className="text-[10px] font-bold text-brand-muted space-y-1 list-disc pl-4">
+                    <li>Copy rules from <code className="bg-brand-ink/10 px-1 rounded">firestore.rules</code> file in the project.</li>
+                    <li>Enable **Email/Password** and **Google** Auth providers.</li>
+                    <li>Add <code className="bg-brand-ink/10 px-1 rounded">{window.location.hostname}</code> to 'Authorized Domains' in Auth settings.</li>
+                    <li>Check if index for <code className="bg-brand-ink/10 px-1 rounded">notifications (userId ASC, createdAt DESC)</code> is required.</li>
+                  </ul>
+                </div>
+
+                <div className="flex gap-4 pt-4">
                   <button 
                     onClick={() => setFirebaseError(null)}
                     className="text-[10px] font-black uppercase tracking-widest text-red-800 hover:opacity-70"
@@ -489,10 +682,13 @@ export default function App() {
                 <p className="text-brand-muted text-sm mt-1 font-medium">Fine-tune your professional presence across the SkillHire ecosystem.</p>
               </header>
               <div className="bg-white p-10 rounded-[40px] border border-brand-border shadow-sm">
-                <ProfileEditor user={user} onUpdate={async () => {
-                  const uDoc = await getDoc(doc(db, "users", user.uid));
-                  if (uDoc.exists()) setUserProfile(uDoc.data());
-                }} />
+                <ProfileEditor 
+                  user={user} 
+                  initialData={userProfile}
+                  onUpdate={(updatedData) => {
+                    setUserProfile(updatedData);
+                  }} 
+                />
               </div>
             </div>
           ) : dashboardTab === 'my_courses' ? (
@@ -627,11 +823,23 @@ export default function App() {
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             {/* Left Column: Learning & Courses */}
             <div className="flex-[2] space-y-10 w-full">
-              <header className="flex justify-between items-center">
+              <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="space-y-1">
                   <h1 className="text-4xl font-display font-black text-brand-ink tracking-tight">
                     Welcome back, {user.displayName?.split(' ')[0]}
                   </h1>
+                </div>
+                <div className="flex gap-2">
+                  {userProfile?.linkedin && (
+                    <a href={userProfile.linkedin.startsWith('http') ? userProfile.linkedin : `https://${userProfile.linkedin}`} target="_blank" rel="noopener noreferrer" className="p-2.5 bg-white rounded-2xl border border-brand-border text-[#0077b5] hover:shadow-md transition-shadow">
+                      <Linkedin className="w-4 h-4" />
+                    </a>
+                  )}
+                  {userProfile?.github && (
+                    <a href={userProfile.github.startsWith('http') ? userProfile.github : `https://${userProfile.github}`} target="_blank" rel="noopener noreferrer" className="p-2.5 bg-white rounded-2xl border border-brand-border text-[#333] hover:shadow-md transition-shadow">
+                      <Github className="w-4 h-4" />
+                    </a>
+                  )}
                 </div>
               </header>
 

@@ -88,6 +88,21 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "topic"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "System or behavioral updates for the user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string", "enum": ["system", "course", "interview", "achievement"] },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "title", "message", "type", "read"]
     }
   },
   "firestore": {
@@ -114,6 +129,10 @@
     "/interview_history/{interviewId}": {
       "schema": "InterviewHistory",
       "description": "Mock interview sessions"
+    },
+    "/notifications/{notifId}": {
+      "schema": "Notification",
+      "description": "User notifications"
     }
   }
 }
