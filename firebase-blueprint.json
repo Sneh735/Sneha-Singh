@@ -57,7 +57,10 @@
         "courseId": { "type": "string" },
         "progress": { "type": "number" },
         "status": { "type": "string", "enum": ["enrolled", "in_progress", "completed"] },
-        "enrolledAt": { "type": "string", "format": "date-time" }
+        "score": { "type": "number" },
+        "certificateGenerated": { "type": "boolean" },
+        "enrolledAt": { "type": "string", "format": "date-time" },
+        "completedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "courseId"]
     },

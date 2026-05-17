@@ -183,7 +183,7 @@ export default function ProfileEditor({ user, initialData, onUpdate }: ProfileEd
 
   return (
     <div className="max-w-3xl mx-auto space-y-10">
-      <div className="flex flex-col md:flex-row items-center gap-10 bg-brand-cream/30 p-8 rounded-[40px] border border-brand-border/50">
+      <div className="flex flex-col md:flex-row items-center gap-10 bg-brand-blue/5 p-8 rounded-[32px] border border-brand-blue/10">
         <div className="relative group shrink-0">
           <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-white shadow-2xl bg-white flex items-center justify-center relative">
             <img 
@@ -229,20 +229,20 @@ export default function ProfileEditor({ user, initialData, onUpdate }: ProfileEd
           />
         </div>
         <div className="flex-1 space-y-2 text-center md:text-left">
-          <div className="inline-block px-3 py-1 bg-brand-blue/10 rounded-lg text-[10px] font-black text-brand-blue uppercase tracking-[0.2em] mb-2">
-            Professional ID: SKILL-{user.uid.slice(0, 8).toUpperCase()}
+          <div className="inline-block px-3 py-1 bg-brand-blue/10 rounded-lg text-[11px] font-bold text-brand-blue uppercase tracking-widest mb-2">
+            Candidate ID: {user.uid.slice(0, 8).toUpperCase()}
           </div>
-          <h2 className="text-4xl font-display font-black text-brand-ink leading-tight">{profileData.displayName || 'Unnamed Maven'}</h2>
+          <h2 className="text-[36px] font-display font-bold text-brand-blue-heading leading-tight">{profileData.displayName || 'Learner'}</h2>
           <p className="text-brand-muted font-medium italic mb-4">"{profileData.bio.slice(0, 100)}{profileData.bio.length > 100 ? '...' : ''}"</p>
           
           <div className="flex flex-wrap justify-center md:justify-start gap-4">
             {profileData.linkedin && (
-              <a href={profileData.linkedin.startsWith('http') ? profileData.linkedin : `https://${profileData.linkedin}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-xl border border-brand-border text-[#0077b5] hover:shadow-md transition-shadow">
+              <a href={profileData.linkedin.startsWith('http') ? profileData.linkedin : `https://${profileData.linkedin}`} target="_blank" rel="noopener noreferrer" className="p-2.5 bg-white rounded-xl border border-brand-border text-[#0077b5] hover:shadow-md transition-all hover:-translate-y-0.5">
                 <Linkedin className="w-5 h-5" />
               </a>
             )}
             {profileData.github && (
-              <a href={profileData.github.startsWith('http') ? profileData.github : `https://${profileData.github}`} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-xl border border-brand-border text-[#333] hover:shadow-md transition-shadow">
+              <a href={profileData.github.startsWith('http') ? profileData.github : `https://${profileData.github}`} target="_blank" rel="noopener noreferrer" className="p-2.5 bg-white rounded-xl border border-brand-border text-[#333] hover:shadow-md transition-all hover:-translate-y-0.5">
                 <Github className="w-5 h-5" />
               </a>
             )}
@@ -251,46 +251,46 @@ export default function ProfileEditor({ user, initialData, onUpdate }: ProfileEd
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-        {/* Personal Discovery */}
+        {/* Personal Details */}
         <div className="space-y-8">
-          <h3 className="text-xs font-black uppercase tracking-[0.3em] text-brand-blue border-b border-brand-blue/20 pb-2">Civil Identity</h3>
+          <h3 className="text-[14px] font-bold uppercase tracking-widest text-brand-blue-heading border-b border-brand-blue/10 pb-3">Personal Profile</h3>
           
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-brand-ink uppercase tracking-widest flex items-center gap-2">
-              <UserIcon className="w-3 h-3 text-brand-blue" />
+          <div className="space-y-2">
+            <label className="text-[11px] font-bold text-brand-ink uppercase tracking-widest flex items-center gap-2">
+              <UserIcon className="w-3.5 h-3.5 text-brand-blue" />
               Full Name
             </label>
             <input 
               type="text" 
               value={profileData.displayName}
               onChange={(e) => setProfileData({ ...profileData, displayName: e.target.value })}
-              className="w-full px-5 py-4 bg-white border border-brand-border rounded-2xl font-bold text-sm focus:border-brand-blue outline-none transition-all shadow-sm"
-              placeholder="Full Name"
+              className="w-full px-5 py-4 bg-brand-cream/30 border border-brand-border rounded-2xl font-bold text-[14px] focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all"
+              placeholder="Elon Musk"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-brand-ink uppercase tracking-widest flex items-center gap-2">
-              <FileText className="w-3 h-3 text-brand-blue" />
-              Resume (PDF)
+          <div className="space-y-2">
+            <label className="text-[11px] font-bold text-brand-ink uppercase tracking-widest flex items-center gap-2">
+              <FileText className="w-3.5 h-3.5 text-brand-blue" />
+              Resume Documentation
             </label>
             <div className="flex items-center gap-3">
               <button 
                 type="button"
                 onClick={() => resumeInputRef.current?.click()}
-                className="px-6 py-3 bg-white border border-brand-border rounded-xl font-bold text-[10px] uppercase tracking-widest hover:border-brand-blue transition-colors flex items-center gap-2"
+                className="px-6 py-3.5 bg-white border border-brand-border rounded-xl font-bold text-[11px] uppercase tracking-widest hover:border-brand-blue transition-all flex items-center gap-2 shadow-sm"
               >
-                {resumeUploading ? <Loader2 className="w-3 h-3 animate-spin"/> : <FileText className="w-3 h-3"/>}
-                {profileData.resumeUrl ? 'Update Resume' : 'Link Resume (PDF)'}
+                {resumeUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin"/> : <FileText className="w-3.5 h-3.5"/>}
+                {profileData.resumeUrl ? 'Update Document' : 'Upload PDF'}
               </button>
               {profileData.resumeUrl && (
                 <a 
                   href={profileData.resumeUrl} 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="text-[9px] font-black uppercase text-brand-blue hover:underline"
+                  className="text-[11px] font-bold text-brand-blue hover:underline"
                 >
-                  View Current PDF
+                  View Current
                 </a>
               )}
             </div>
@@ -300,142 +300,95 @@ export default function ProfileEditor({ user, initialData, onUpdate }: ProfileEd
               className="hidden" 
               accept=".pdf"
             />
-            <p className="text-[9px] font-bold text-brand-muted uppercase tracking-widest pl-1">Enable professional visibility with academic proof</p>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-brand-ink uppercase tracking-widest flex items-center gap-2">
-              <Phone className="w-3 h-3 text-brand-blue" />
-              Contact Number
+          <div className="space-y-2">
+            <label className="text-[11px] font-bold text-brand-ink uppercase tracking-widest flex items-center gap-2">
+              <Phone className="w-3.5 h-3.5 text-brand-blue" />
+              Primary Contact
             </label>
             <input 
               type="tel" 
               value={profileData.phoneNumber}
               onChange={(e) => setProfileData({ ...profileData, phoneNumber: e.target.value })}
-              className="w-full px-5 py-4 bg-white border border-brand-border rounded-2xl font-bold text-sm focus:border-brand-blue outline-none transition-all shadow-sm"
-              placeholder="Contact Number"
+              className="w-full px-5 py-4 bg-brand-cream/30 border border-brand-border rounded-2xl font-bold text-[14px] focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all"
+              placeholder="+1 (555) 000-0000"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-brand-ink uppercase tracking-widest flex items-center gap-2">
-              <Clock className="w-3 h-3 text-brand-blue" />
-              Date of Birth
-            </label>
-            <input 
-              type="date" 
-              value={profileData.dob}
-              onChange={(e) => setProfileData({ ...profileData, dob: e.target.value })}
-              className="w-full px-5 py-4 bg-white border border-brand-border rounded-2xl font-bold text-sm focus:border-brand-blue outline-none transition-all shadow-sm"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-brand-ink uppercase tracking-widest flex items-center gap-2">
-              <Clock className="w-3 h-3 text-brand-blue" />
-              Years of Experience
+          <div className="space-y-2">
+            <label className="text-[11px] font-bold text-brand-ink uppercase tracking-widest flex items-center gap-2">
+              <Clock className="w-3.5 h-3.5 text-brand-blue" />
+              Experience Level (Years)
             </label>
             <input 
               type="number" 
               value={profileData.experience}
               onChange={(e) => setProfileData({ ...profileData, experience: parseInt(e.target.value) || 0 })}
-              className="w-full px-5 py-4 bg-white border border-brand-border rounded-2xl font-bold text-sm focus:border-brand-blue outline-none transition-all shadow-sm"
+              className="w-full px-5 py-4 bg-brand-cream/30 border border-brand-border rounded-2xl font-bold text-[14px] focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all"
               placeholder="0"
               min="0"
             />
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-brand-ink uppercase tracking-widest flex items-center gap-2">
-              <Lock className="w-3 h-3 text-brand-blue" />
-              Enrollment PIN/Password
+          <div className="space-y-2">
+            <label className="text-[11px] font-bold text-brand-ink uppercase tracking-widest flex items-center gap-2">
+              <Lock className="w-3.5 h-3.5 text-brand-blue" />
+              Course Enrollment Security PIN
             </label>
             <div className="relative">
               <input 
                 type={showPin ? "text" : "password"} 
                 value={profileData.enrollmentPin}
                 onChange={(e) => setProfileData({ ...profileData, enrollmentPin: e.target.value })}
-                className="w-full px-5 py-4 bg-white border border-brand-border rounded-2xl font-bold text-sm focus:border-brand-blue outline-none transition-all shadow-sm"
-                placeholder="Set a PIN for course access"
+                className="w-full px-5 py-4 bg-brand-cream/30 border border-brand-border rounded-2xl font-bold text-[14px] focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all text-center tracking-[0.5em]"
+                placeholder="••••••"
                 maxLength={6}
               />
               <button 
                 type="button"
                 onClick={() => setShowPin(!showPin)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-muted hover:text-brand-blue transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-muted hover:text-brand-blue transition-colors px-2 py-1 text-[10px] font-bold"
               >
-                <div className="text-[10px] font-black uppercase tracking-widest">{showPin ? 'Hide' : 'Show'}</div>
+                {showPin ? 'HIDE' : 'SHOW'}
               </button>
             </div>
-            <p className="text-[9px] font-bold text-brand-muted uppercase tracking-widest pl-1">Required to authenticate course enrollment</p>
-          </div>
-          <div className="space-y-1.5 pt-4">
-            <h3 className="text-xs font-black uppercase tracking-[0.3em] text-brand-blue border-b border-brand-blue/20 pb-2 mb-4">Professional Nodes</h3>
-            
-            <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-brand-ink uppercase tracking-widest flex items-center gap-2">
-                  <Linkedin className="w-3 h-3 text-[#0077b5]" />
-                  LinkedIn Profile
-                </label>
-                <input 
-                  type="url" 
-                  value={profileData.linkedin}
-                  onChange={(e) => setProfileData({ ...profileData, linkedin: e.target.value })}
-                  className="w-full px-5 py-3 bg-white border border-brand-border rounded-2xl font-bold text-sm focus:border-brand-blue outline-none transition-all shadow-sm"
-                  placeholder="linkedin.com/in/username"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-brand-ink uppercase tracking-widest flex items-center gap-2">
-                  <Github className="w-3 h-3 text-[#333]" />
-                  GitHub Registry
-                </label>
-                <input 
-                  type="url" 
-                  value={profileData.github}
-                  onChange={(e) => setProfileData({ ...profileData, github: e.target.value })}
-                  className="w-full px-5 py-3 bg-white border border-brand-border rounded-2xl font-bold text-sm focus:border-brand-blue outline-none transition-all shadow-sm"
-                  placeholder="github.com/username"
-                />
-              </div>
-            </div>
+            <p className="text-[11px] font-medium text-brand-muted pl-1 italic">Used for curriculum authentication.</p>
           </div>
         </div>
 
-        {/* Academic Topology */}
+        {/* Professional & Skills */}
         <div className="space-y-8">
-          <h3 className="text-xs font-black uppercase tracking-[0.3em] text-brand-blue border-b border-brand-blue/20 pb-2">Academic Topology</h3>
+          <h3 className="text-[14px] font-bold uppercase tracking-widest text-brand-blue-heading border-b border-brand-blue/10 pb-3">Expertise & Network</h3>
           
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-brand-ink uppercase tracking-widest flex items-center gap-2">
-              <GraduationCap className="w-3 h-3 text-brand-blue" />
-              Graduation Details
+          <div className="space-y-2">
+            <label className="text-[11px] font-bold text-brand-ink uppercase tracking-widest flex items-center gap-2">
+              <GraduationCap className="w-3.5 h-3.5 text-brand-blue" />
+              Academic Background
             </label>
             <input 
               type="text" 
               value={profileData.graduationDetails}
               onChange={(e) => setProfileData({ ...profileData, graduationDetails: e.target.value })}
-              className="w-full px-5 py-4 bg-white border border-brand-border rounded-2xl font-bold text-sm focus:border-brand-blue outline-none transition-all shadow-sm"
-              placeholder="Degree, Major, Graduation Year"
+              className="w-full px-5 py-4 bg-brand-cream/30 border border-brand-border rounded-2xl font-bold text-[14px] focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all"
+              placeholder="B.Tech Computer Science, 2024"
             />
           </div>
 
-          <div className="space-y-3">
-            <label className="text-[10px] font-black text-brand-ink uppercase tracking-widest flex items-center gap-2">
-              <Sparkles className="w-3 h-3 text-brand-blue" />
-              Key Domain Expertise
+          <div className="space-y-4">
+            <label className="text-[11px] font-bold text-brand-ink uppercase tracking-widest flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5 text-brand-blue" />
+              Core Competencies
             </label>
             <div className="flex flex-wrap gap-2 mb-3">
               {profileData.keySkills.map(skill => (
-                <span key={skill} className="bg-brand-blue/10 text-brand-blue px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-brand-blue/20">
+                <span key={skill} className="bg-brand-blue/10 text-brand-blue px-3 py-2 rounded-xl text-[11px] font-bold uppercase tracking-tight flex items-center gap-2 border border-brand-blue/20">
                   {skill}
-                  <button onClick={() => removeSkill(skill)} className="hover:text-red-500 transition-colors">×</button>
+                  <button onClick={() => removeSkill(skill)} className="hover:text-red-500 transition-colors text-lg leading-none">×</button>
                 </span>
               ))}
               {profileData.keySkills.length === 0 && (
-                <p className="text-[10px] text-brand-muted italic font-medium">No expertise mapped yet.</p>
+                <p className="text-[12px] text-brand-muted italic">No competencies added yet.</p>
               )}
             </div>
             <form onSubmit={addSkill} className="relative">
@@ -443,61 +396,63 @@ export default function ProfileEditor({ user, initialData, onUpdate }: ProfileEd
                 type="text" 
                 value={newSkill}
                 onChange={(e) => setNewSkill(e.target.value)}
-                className="w-full px-5 py-3 bg-white border border-brand-border rounded-2xl font-bold text-xs focus:border-brand-blue outline-none transition-all"
-                placeholder="Add skill (e.g. React, UX, Python)"
+                className="w-full px-5 py-4 bg-white border border-brand-border-rounded-2xl font-bold text-[14px] focus:border-brand-blue outline-none transition-all"
+                placeholder="Add skill (e.g. React, UX Design)"
               />
               <button 
                 type="submit"
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-brand-blue text-white w-8 h-8 rounded-xl flex items-center justify-center hover:bg-brand-blue-dark transition-all"
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-brand-blue text-white w-10 h-10 rounded-xl flex items-center justify-center hover:bg-brand-blue-dark transition-all shadow-md"
               >
                 +
               </button>
             </form>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-brand-ink uppercase tracking-widest flex items-center gap-2 flex-justify-between w-full">
-              <span className="flex items-center gap-2"><FileText className="w-3 h-3 text-brand-blue" /> Professional Bio</span>
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <label className="text-[11px] font-bold text-brand-ink uppercase tracking-widest pl-1 flex items-center gap-2">
+                <FileText className="w-3.5 h-3.5 text-brand-blue" /> Professional Summary
+              </label>
               <span className={cn(
-                "text-[9px] font-bold",
+                "text-[10px] font-bold",
                 getWordCount(profileData.bio) > 250 ? "text-red-500" : "text-brand-muted"
               )}>
-                {getWordCount(profileData.bio)} / 250 Words
+                {getWordCount(profileData.bio)}/250 Words
               </span>
-            </label>
+            </div>
             <textarea 
               value={profileData.bio}
               onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
-              className="w-full px-5 py-4 bg-white border border-brand-border rounded-2xl font-bold text-sm focus:border-brand-blue outline-none transition-all shadow-sm min-h-[160px] resize-none leading-relaxed"
-              placeholder="Craft your 250-word manifest..."
+              className="w-full px-5 py-4 bg-brand-cream/30 border border-brand-border rounded-2xl font-bold text-[14px] focus:border-brand-blue outline-none transition-all min-h-[160px] resize-none leading-relaxed"
+              placeholder="Elevator pitch here..."
             />
           </div>
         </div>
       </div>
 
-      <div className="flex justify-end pt-6">
+      <div className="flex justify-end pt-10 border-t border-brand-border/40">
         <button 
           onClick={handleSave}
           disabled={loading}
           className={cn(
-            "px-10 py-4 rounded-full font-black uppercase tracking-widest text-xs transition-all flex items-center gap-3",
+            "px-12 py-5 rounded-full font-bold text-[15px] transition-all flex items-center gap-3",
             saveSuccess 
-              ? "bg-green-500 text-white shadow-xl shadow-green-100" 
-              : "bg-brand-blue text-white shadow-xl shadow-blue-100 hover:bg-brand-blue-dark active:scale-95 disabled:opacity-50"
+              ? "bg-emerald-500 text-white shadow-xl shadow-emerald-100" 
+              : "bg-brand-blue text-white shadow-[0_20px_40px_-10px_rgba(26,110,245,0.4)] hover:bg-brand-blue-dark hover:scale-[1.05] active:scale-[0.98] disabled:opacity-50"
           )}
         >
           {loading ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Processing...
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Synchronizing...
             </>
           ) : saveSuccess ? (
             <>
-              <Check className="w-4 h-4" />
-              Saved!
+              <Check className="w-5 h-5" />
+              Profile Updated
             </>
           ) : (
-            'Commit Changes'
+            'Commit Profile Changes'
           )}
         </button>
       </div>

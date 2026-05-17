@@ -91,28 +91,30 @@ export default function MockInterview() {
 
   if (!started) {
     return (
-      <div className="bg-white p-12 rounded-[40px] border border-brand-border text-center space-y-8 max-w-2xl mx-auto">
-        <div className="w-20 h-20 bg-brand-blue/5 rounded-3xl flex items-center justify-center mx-auto">
+      <div className="bg-white p-12 rounded-[32px] border border-brand-border/40 text-center space-y-10 max-w-2xl mx-auto shadow-sm">
+        <div className="w-20 h-20 bg-brand-blue/5 rounded-[24px] flex items-center justify-center mx-auto border border-brand-blue/10 shadow-sm">
           <MessageSquare className="w-10 h-10 text-brand-blue" />
         </div>
         <div className="space-y-3">
-          <h2 className="text-3xl font-display font-black text-brand-ink">AI Mock Interview</h2>
-          <p className="text-brand-muted font-medium">Practice with a strict but helpful AI interviewer. Get feedback on your technical depth and communication.</p>
+          <h2 className="text-[32px] font-display font-bold text-brand-blue-heading tracking-tight leading-tight">AI Interview Simulation</h2>
+          <p className="text-brand-muted text-[15px] font-medium leading-relaxed">Test your technical depth and articulation against our optimized LLM interviewer. Receive real-time cognitive feedback.</p>
         </div>
-        <div className="space-y-4">
-          <label className="text-[10px] font-black uppercase tracking-widest text-brand-muted block">Search or Select Your Interview Topic</label>
-          <input 
-            type="text" 
-            value={topicSearch}
-            onChange={(e) => {
-              setTopicSearch(e.target.value);
-              setTopic(e.target.value); // Sync topic with search if they want a custom one
-            }}
-            placeholder="Search topics or enter a custom project/topic..."
-            className="w-full px-5 py-4 bg-brand-cream/50 border border-brand-border rounded-2xl font-medium text-sm focus:border-brand-blue outline-none transition-all shadow-sm"
-          />
-          <div className="flex flex-wrap justify-center gap-3 mt-4">
-            {filteredTopics.map(t => (
+        <div className="space-y-5">
+          <label className="text-[11px] font-bold uppercase tracking-widest text-brand-muted block">Select Target Domain</label>
+          <div className="relative group">
+            <input 
+              type="text" 
+              value={topicSearch}
+              onChange={(e) => {
+                setTopicSearch(e.target.value);
+                setTopic(e.target.value); 
+              }}
+              placeholder="Search or enter custom topic..."
+              className="w-full px-5 py-4.5 bg-brand-cream/30 border border-brand-border rounded-2xl font-bold text-[14px] focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 outline-none transition-all"
+            />
+          </div>
+          <div className="flex flex-wrap justify-center gap-2.5 mt-4">
+            {filteredTopics.slice(0, 8).map(t => (
               <button 
                 key={t}
                 onClick={() => {
@@ -120,8 +122,10 @@ export default function MockInterview() {
                   setTopicSearch(t);
                 }}
                 className={cn(
-                  "px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all",
-                  topic === t ? "bg-brand-blue text-white shadow-lg shadow-blue-100" : "bg-brand-cream text-brand-muted hover:bg-brand-blue-light"
+                  "px-5 py-3 rounded-xl text-[11px] font-bold uppercase tracking-tight transition-all border",
+                  topic === t 
+                    ? "bg-brand-blue border-brand-blue text-white shadow-lg active:scale-95" 
+                    : "bg-white border-brand-border text-brand-muted hover:border-brand-blue/40"
                 )}
               >
                 {t}
@@ -132,66 +136,69 @@ export default function MockInterview() {
         <button 
           onClick={handleStart}
           disabled={!topic.trim()}
-          className="w-full py-5 bg-brand-blue text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs shadow-xl shadow-blue-200 hover:bg-brand-blue-dark transition-all active:scale-95 disabled:opacity-50"
+          className="w-full py-5 bg-brand-blue text-white rounded-2xl font-bold text-[15px] shadow-[0_20px_40px_-10px_rgba(26,110,245,0.4)] hover:bg-brand-blue-dark transition-all active:scale-95 disabled:opacity-50"
         >
-          Begin Simulation
+          Initialize Simulation
         </button>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-[700px] bg-white rounded-[40px] border border-brand-border overflow-hidden shadow-sm">
+    <div className="flex flex-col h-[750px] bg-white rounded-[32px] border border-brand-border/40 overflow-hidden shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)]">
       {/* Header */}
-      <div className="p-6 bg-brand-ink text-white flex justify-between items-center shadow-lg">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-brand-blue rounded-xl flex items-center justify-center">
-            <Bot className="w-6 h-6" />
+      <div className="p-6 bg-brand-blue-heading text-white flex justify-between items-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-brand-blue/10 opacity-30 pointer-events-none" />
+        <div className="flex items-center gap-4 relative z-10">
+          <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center border border-white/20 backdrop-blur-md">
+            <Bot className="w-7 h-7 text-white" />
           </div>
           <div>
-            <h3 className="font-display font-black text-lg leading-none">Interviewer Alpha</h3>
-            <p className="text-[10px] font-black uppercase tracking-widest text-brand-accent/80 mt-1">Topic: {topic}</p>
+            <h3 className="font-display font-bold text-[18px] leading-tight">Interviewer Protocol Alpha</h3>
+            <p className="text-[11px] font-bold uppercase tracking-widest text-brand-blue-heading/60 mt-0.5 bg-white/90 px-2 py-0.5 rounded inline-block">Domain: {topic}</p>
           </div>
         </div>
-        <button onClick={handleReset} className="p-2 hover:bg-white/10 rounded-lg transition-colors">
-          <RefreshCcw className="w-4 h-4" />
+        <button onClick={handleReset} className="p-2.5 hover:bg-white/10 rounded-xl transition-all border border-white/10 group active:rotate-90">
+          <RefreshCcw className="w-4 h-4 group-hover:text-white transition-opacity text-white/70" />
         </button>
       </div>
 
       {/* Messages */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-8 space-y-6 bg-brand-cream/20">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto p-10 space-y-8 bg-[#f8fafc]">
         <AnimatePresence initial={false}>
           {messages.map((m, i) => (
             <motion.div 
               key={i}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               className={cn(
-                "flex gap-4 max-w-[85%]",
+                "flex gap-5 max-w-[90%]",
                 m.role === 'user' ? "ml-auto flex-row-reverse" : ""
               )}
             >
               <div className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1 shadow-sm",
-                m.role === 'user' ? "bg-brand-accent" : "bg-brand-blue"
+                "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 mt-1 shadow-md border",
+                m.role === 'user' ? "bg-white border-brand-border" : "bg-brand-blue border-brand-blue shadow-brand-blue/20"
               )}>
-                {m.role === 'user' ? <User className="w-4 h-4 text-brand-ink" /> : <Bot className="w-4 h-4 text-white" />}
+                {m.role === 'user' ? <User className="w-5 h-5 text-brand-blue" /> : <Bot className="w-5 h-5 text-white" />}
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className={cn(
-                  "p-4 rounded-3xl text-sm font-medium leading-relaxed shadow-sm",
-                  m.role === 'user' ? "bg-brand-ink text-white rounded-tr-none" : "bg-white text-brand-ink border border-brand-border rounded-tl-none"
+                  "p-5 rounded-[24px] text-[15px] font-medium leading-relaxed shadow-sm border",
+                  m.role === 'user' 
+                    ? "bg-brand-blue text-white rounded-tr-none border-brand-blue" 
+                    : "bg-white text-brand-blue-heading border-brand-border/60 rounded-tl-none"
                 )}>
                   {m.text}
                 </div>
                 {m.feedback && (
                   <motion.div 
-                   initial={{ opacity: 0, scale: 0.9 }}
+                   initial={{ opacity: 0, scale: 0.95 }}
                    animate={{ opacity: 1, scale: 1 }}
-                   className="p-3 bg-brand-blue/5 border border-brand-blue/10 rounded-2xl flex items-start gap-2"
+                   className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-start gap-3"
                   >
-                    <Sparkles className="w-3 h-3 text-brand-blue shrink-0 mt-0.5" />
-                    <p className="text-[11px] font-bold text-brand-blue italic">{m.feedback}</p>
+                    <Sparkles className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <p className="text-[13px] font-bold text-emerald-800 italic leading-relaxed">{m.feedback}</p>
                   </motion.div>
                 )}
               </div>

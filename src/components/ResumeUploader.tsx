@@ -53,9 +53,9 @@ export default function ResumeUploader({ onAnalysisComplete }: ResumeUploaderPro
   };
 
   return (
-    <div className="w-full max-w-xl mx-auto flex flex-col items-center text-center space-y-8">
+    <div className="w-full flex flex-col items-center text-center">
       <div className={cn(
-        "w-full p-12 border-2 border-dashed rounded-[40px] transition-all duration-300 relative group",
+        "w-full p-10 border-2 border-dashed rounded-[32px] transition-all duration-300 relative group",
         isUploading ? "border-brand-blue bg-brand-blue/5" : "border-brand-border hover:border-brand-blue hover:bg-brand-blue/5"
       )}>
         <input 
@@ -66,36 +66,36 @@ export default function ResumeUploader({ onAnalysisComplete }: ResumeUploaderPro
           disabled={isUploading} 
         />
         
-        <div className="flex flex-col items-center space-y-6 relative z-0">
+        <div className="flex flex-col items-center space-y-4 relative z-0">
           <div className={cn(
-            "w-20 h-20 rounded-3xl flex items-center justify-center transition-all duration-500 shadow-xl",
-            isUploading ? "bg-brand-blue text-white animate-pulse" : "bg-white text-brand-blue group-hover:scale-110"
+            "w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-lg",
+            isUploading ? "bg-brand-blue text-white animate-pulse" : "bg-white text-brand-blue group-hover:scale-110 border border-brand-border"
           )}>
-            {isUploading ? <Loader2 className="w-10 h-10 animate-spin" /> : <Upload className="w-10 h-10" />}
+            {isUploading ? <Loader2 className="w-8 h-8 animate-spin" /> : <Upload className="w-8 h-8" />}
           </div>
           
-          <div className="space-y-2">
-            <h3 className="text-2xl font-display font-black text-brand-ink tracking-tight">Sync your Methodology</h3>
-            <p className="text-brand-muted text-sm font-medium max-w-[280px]">Drag your PDF resume here or click to browse your ecosystem.</p>
+          <div className="space-y-1">
+            <h3 className="text-[20px] font-display font-bold text-brand-blue-heading tracking-tight">Sync Methodology</h3>
+            <p className="text-brand-muted text-[13px] font-medium max-w-[240px]">Drag PDF resume or click to browse local files.</p>
           </div>
 
-          <div className="pt-4 flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-brand-muted">
+          <div className="pt-3 flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-brand-muted">
             <div className="flex items-center gap-1.5 px-3 py-1 bg-white rounded-full border border-brand-border/50">
-              <FileText className="w-3 h-3" /> PDF Support
+              <FileText className="w-3.5 h-3.5" /> PDF Only
             </div>
             <div className="flex items-center gap-1.5 px-3 py-1 bg-white rounded-full border border-brand-border/50">
-              <CheckCircle className="w-3 h-3" /> AI Verification
+              <CheckCircle className="w-3.5 h-3.5" /> AI Scored
             </div>
           </div>
         </div>
       </div>
       
       {error && (
-        <div className="flex items-start gap-4 p-6 bg-red-50 text-red-700 rounded-[32px] text-xs font-medium border border-red-100 shadow-lg animate-shake max-w-md">
-          <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-          <div className="space-y-2">
-            <p className="font-black uppercase tracking-widest text-red-800">Analysis Failed</p>
-            <p className="whitespace-pre-wrap leading-relaxed">{error}</p>
+        <div className="flex items-start gap-3 p-4 mt-6 bg-red-50 text-red-700 rounded-2xl text-[12px] font-medium border border-red-100 shadow-sm animate-in fade-in slide-in-from-top-2">
+          <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+          <div className="text-left">
+            <p className="font-bold uppercase tracking-widest text-red-800 text-[10px] mb-1">Upload Error</p>
+            <p className="leading-relaxed">{error}</p>
           </div>
         </div>
       )}

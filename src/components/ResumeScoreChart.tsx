@@ -39,8 +39,8 @@ export default function ResumeScoreChart({ score }: ResumeScoreChartProps) {
         </PieChart>
       </ResponsiveContainer>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-3xl font-black text-brand-ink">{score}</span>
-        <span className="text-[10px] font-black text-brand-muted uppercase tracking-widest">Score</span>
+        <span className="text-[32px] font-bold text-brand-blue-heading tracking-tight leading-none">{score}</span>
+        <span className="text-[11px] font-bold text-brand-muted uppercase tracking-[0.1em] mt-1">Rating</span>
       </div>
     </div>
   );

@@ -305,7 +305,7 @@ export default function App() {
     }
   };
 
-  const markCourseComplete = async (courseId: string) => {
+  const markCourseComplete = async (courseId: string, score: number) => {
     if (!user) return;
     const newCompleted = [...completedCourses, courseId];
     setCompletedCourses(newCompleted);
@@ -323,7 +323,10 @@ export default function App() {
     try {
       await setDoc(doc(db, "enrollments", `${user.uid}_${courseId}`), {
         progress: 100,
-        status: 'completed'
+        status: 'completed',
+        score: score,
+        certificateGenerated: true,
+        completedAt: new Date().toISOString()
       }, { merge: true });
     } catch (err) {
       handleFirestoreError(err, OperationType.UPDATE, enrollmentPath);
@@ -400,14 +403,14 @@ export default function App() {
               <div className="w-16 h-16 bg-brand-blue/10 rounded-3xl flex items-center justify-center mb-6">
                 <BookOpen className="w-8 h-8 text-brand-blue" />
               </div>
-              <h2 className="text-2xl font-display font-black text-brand-ink tracking-tight mb-2">Authentication Required</h2>
+              <h2 className="text-[20px] font-display font-bold text-brand-blue-heading tracking-tight mb-2">Authentication Required</h2>
               <p className="text-brand-muted text-sm font-medium mb-8 leading-relaxed">
                 Please enter your Professional Enrollment PIN/Password to access this curriculum module.
               </p>
 
               <div className="space-y-6">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-brand-ink uppercase tracking-widest block pl-1">Enrollment Signature</label>
+                  <label className="text-[11px] font-bold text-brand-blue-heading uppercase tracking-widest block pl-1">Enrollment Key</label>
                   <input 
                     type="password" 
                     placeholder="••••••"
@@ -425,13 +428,13 @@ export default function App() {
                 <div className="flex gap-3 pt-2">
                   <button 
                     onClick={() => setPinModal({ isOpen: false, courseId: null, error: null, pin: '' })}
-                    className="flex-1 py-4 text-[10px] font-black uppercase tracking-widest text-brand-muted hover:text-brand-ink transition-colors"
+                    className="flex-1 py-4 text-[11px] font-bold uppercase tracking-widest text-brand-muted hover:text-brand-blue-heading transition-colors"
                   >
                     Cancel
                   </button>
                   <button 
                     onClick={verifyPinAndEnroll}
-                    className="flex-[2] py-4 bg-brand-blue text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-blue-100 hover:bg-brand-blue-dark transition-all active:scale-95"
+                    className="flex-[2] py-4 bg-brand-blue text-white rounded-2xl text-[11px] font-bold uppercase tracking-widest shadow-lg shadow-blue-100 hover:bg-brand-blue-dark transition-all active:scale-95"
                   >
                     Authenticate & Enroll
                   </button>
@@ -446,36 +449,36 @@ export default function App() {
         <CourseContent 
           course={activeCourse} 
           onClose={() => setActiveCourse(null)} 
-          onComplete={markCourseComplete}
+          onComplete={(id, s) => markCourseComplete(id, s)}
           userName={user.displayName || "Learner"}
         />
       )}
       {/* Sidebar Navigation */}
       <aside className="w-72 bg-white border-r border-brand-border flex flex-col h-screen sticky top-0 hidden lg:flex">
         <div className="p-8 flex items-center gap-4">
-          <div className="w-10 h-10 bg-brand-blue rounded-2xl flex items-center justify-center shadow-xl shadow-blue-100">
+          <div className="w-12 h-12 bg-brand-blue rounded-2xl flex items-center justify-center shadow-xl shadow-blue-200">
             <GraduationCap className="w-6 h-6 text-white" />
           </div>
-          <span className="font-display font-black text-2xl tracking-tighter text-brand-ink">SkillHire</span>
+          <span className="font-display font-bold text-[24px] tracking-tight text-brand-blue-heading">SkillHire</span>
         </div>
         
-        <nav className="flex-1 px-6 space-y-2 mt-4">
+        <nav className="flex-1 px-6 space-y-1.5 mt-4">
           {[
             { id: 'overview', icon: LayoutDashboard, label: 'Dashboard Home' },
-            { id: 'my_courses', icon: GraduationCap, label: 'My Courses' },
+            { id: 'my_courses', icon: GraduationCap, label: 'My Learning' },
             { id: 'path', icon: Map, label: 'Career Roadmap' },
             { id: 'interview', icon: MessageSquare, label: 'Mock Interview' },
-            { id: 'resume', icon: Search, label: 'Resume Tools' },
-            { id: 'profile', icon: Settings, label: 'Platform Settings' }
+            { id: 'resume', icon: Search, label: 'Resume Analysis' },
+            { id: 'profile', icon: Settings, label: 'Settings' }
           ].map(item => (
             <button 
               key={item.id}
               onClick={() => setDashboardTab(item.id as any)}
               className={cn(
-                "w-full flex items-center gap-4 px-4 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all",
+                "w-full flex items-center gap-4 px-4 py-3 rounded-xl font-semibold text-[14px] transition-all",
                 (dashboardTab === item.id || (item.id === 'overview' && dashboardTab === 'overview')) 
-                  ? "bg-brand-blue text-white shadow-lg shadow-blue-100" 
-                  : "text-brand-muted hover:bg-slate-50 hover:text-brand-ink"
+                  ? "bg-brand-blue/10 text-brand-blue shadow-sm" 
+                  : "text-brand-muted hover:bg-brand-blue/5 hover:text-brand-blue"
               )}
             >
               <item.icon className="w-4 h-4" />
@@ -494,7 +497,7 @@ export default function App() {
                 alt="Profile"
               />
               <div className="flex-1 overflow-hidden">
-                <p className="text-xs font-black text-brand-ink truncate">{user.displayName}</p>
+                <p className="text-xs font-bold text-brand-blue-heading truncate">{user.displayName}</p>
                 <p className="text-[10px] font-bold text-brand-muted truncate">ID: {user.uid.slice(0, 8)}</p>
               </div>
               <button onClick={logout} className="p-2 text-brand-muted hover:text-red-500 transition-colors">
@@ -509,20 +512,20 @@ export default function App() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         {/* Top Bar */}
-        <header className="h-20 bg-white/80 backdrop-blur-xl border-b border-brand-border px-10 flex items-center justify-between sticky top-0 z-40">
+        <header className="h-20 bg-white/60 backdrop-blur-xl border-b border-brand-border px-10 flex items-center justify-between sticky top-0 z-40">
           <div className="flex-1 max-w-xl">
             <div className="relative group">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-muted group-focus-within:text-brand-blue transition-colors" />
               <input 
                 type="text" 
-                placeholder="Search courses, skills, or mentors..." 
+                placeholder="Search resources..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-brand-blue-light/30 border border-brand-border rounded-2xl py-3 pl-12 pr-4 text-sm font-medium outline-none focus:border-brand-blue focus:bg-white transition-all"
+                className="w-full bg-brand-cream/50 border border-brand-border rounded-xl py-2.5 pl-12 pr-4 text-[14px] font-medium outline-none focus:border-brand-blue focus:bg-white focus:ring-4 focus:ring-brand-blue/5 transition-all"
               />
               {searchResults.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-3xl border border-brand-border shadow-2xl p-4 space-y-2 max-h-96 overflow-y-auto z-50">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-brand-muted px-2 mb-2">Search Results</p>
+                  <p className="text-[11px] font-bold uppercase tracking-widest text-brand-muted px-2 mb-2">Search Results</p>
                   {searchResults.map(course => (
                     <button 
                       key={course.id}
@@ -569,7 +572,7 @@ export default function App() {
                     className="absolute top-full right-0 mt-4 w-80 bg-white rounded-3xl border border-brand-border shadow-2xl overflow-hidden z-50"
                   >
                     <div className="p-4 border-b border-brand-border bg-brand-cream/30 flex justify-between items-center">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-brand-ink">Notifications</p>
+                      <p className="text-[11px] font-bold uppercase tracking-widest text-brand-blue-heading">Notifications</p>
                       <button 
                         onClick={() => setShowNotifications(false)}
                         className="text-[10px] font-black uppercase tracking-widest text-brand-muted hover:text-brand-ink"
@@ -599,7 +602,7 @@ export default function App() {
                                 n.read ? "bg-transparent" : "bg-brand-blue"
                               )} />
                               <div className="space-y-1">
-                                <p className="text-xs font-black text-brand-ink leading-tight">{n.title}</p>
+                        <p className="text-xs font-bold text-brand-blue-heading leading-tight">{n.title}</p>
                                 <p className="text-[10px] font-medium text-brand-muted leading-relaxed">{n.message}</p>
                                 <p className="text-[8px] font-black text-brand-muted/50 uppercase tracking-widest">
                                   {new Date(n.createdAt).toLocaleDateString()}
@@ -617,7 +620,7 @@ export default function App() {
             <div className="h-8 w-px bg-brand-border" />
             <button onClick={() => setDashboardTab('profile')} className="flex items-center gap-3 group">
               <div className="text-right hidden sm:block">
-                <p className="text-xs font-black text-brand-ink leading-none">{userProfile?.displayName || user.displayName}</p>
+                <p className="text-xs font-bold text-brand-blue-heading leading-none">{userProfile?.displayName || user.displayName}</p>
                 <p className="text-[10px] font-bold text-brand-muted uppercase tracking-widest mt-1">Student</p>
               </div>
               <img 
@@ -678,10 +681,10 @@ export default function App() {
           {dashboardTab === 'profile' ? (
             <div className="space-y-8">
               <header>
-                <h1 className="text-3xl font-display font-black text-brand-ink tracking-tight">Identity Management</h1>
-                <p className="text-brand-muted text-sm mt-1 font-medium">Fine-tune your professional presence across the SkillHire ecosystem.</p>
+                <h1 className="text-[32px] font-display font-bold text-brand-blue-heading tracking-tight">Identity Management</h1>
+                <p className="text-brand-muted text-[15px] mt-1 font-medium leading-relaxed">Refine your professional presence across the SkillHire ecosystem.</p>
               </header>
-              <div className="bg-white p-10 rounded-[40px] border border-brand-border shadow-sm">
+              <div className="bg-white p-10 rounded-[32px] border border-brand-border/40 shadow-sm">
                 <ProfileEditor 
                   user={user} 
                   initialData={userProfile}
@@ -694,7 +697,7 @@ export default function App() {
           ) : dashboardTab === 'my_courses' ? (
             <div className="space-y-8">
               <header>
-                <h1 className="text-3xl font-display font-black text-brand-ink tracking-tight">University of You</h1>
+                <h1 className="text-[32px] font-display font-bold text-brand-blue-heading tracking-tight">Active Curriculum</h1>
                 <p className="text-brand-muted text-sm mt-1 font-medium">Tracking your path to mastery. Complete courses to earn verified certificates.</p>
               </header>
               
@@ -704,7 +707,7 @@ export default function App() {
                     <BookOpen className="w-10 h-10 text-brand-blue opacity-40" />
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-2xl font-display font-black text-brand-ink">No Active Enrollments</h3>
+                    <h3 className="text-[20px] font-display font-bold text-brand-blue-heading">No Active Enrollments</h3>
                     <p className="text-brand-muted max-w-sm mx-auto font-medium">You haven't added any skills to your methodology yet. Explore the catalog to begin.</p>
                   </div>
                   <button 
@@ -724,7 +727,7 @@ export default function App() {
                       isCompleted={completedCourses.includes(course.id)}
                       progress={enrollments[course.id]?.progress || 0}
                       onEnroll={handleEnrollWithPin}
-                      onComplete={markCourseComplete}
+                      onComplete={(id, s) => markCourseComplete(id, s || 100)}
                       onView={(c) => setActiveCourse(c)}
                       userName={user.displayName || "Learner"}
                     />
@@ -735,7 +738,7 @@ export default function App() {
           ) : dashboardTab === 'resume' ? (
             <div className="space-y-10 max-w-4xl">
               <header>
-                <h1 className="text-3xl font-display font-black text-brand-ink tracking-tight">Resume Evolution</h1>
+                <h1 className="text-[32px] font-display font-bold text-brand-blue-heading tracking-tight">Resume Evolution</h1>
                 <p className="text-brand-muted text-sm mt-1 font-medium">Upload your resume to receive AI feedback and ecosystem mapping.</p>
               </header>
               <div className="glass p-12 rounded-[40px]">
@@ -744,7 +747,7 @@ export default function App() {
               {analysis && (
                 <div className="grid grid-cols-1 gap-8">
                   <div className="glass p-8 rounded-[32px] space-y-4">
-                    <h3 className="font-black uppercase tracking-widest text-[10px] text-brand-blue">Summary - {analysis.candidateName || 'Unknown Candidate'}</h3>
+                    <h3 className="text-[12px] font-bold uppercase tracking-widest text-brand-blue">Summary - {analysis.candidateName || 'Unknown Candidate'}</h3>
                     <p className="text-sm font-medium text-brand-muted leading-relaxed">{analysis.summary}</p>
                     <div className="flex gap-4 mt-2">
                       <div className="bg-brand-cream px-3 py-2 rounded-xl">
@@ -754,7 +757,7 @@ export default function App() {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="glass p-8 rounded-[32px] space-y-4">
-                      <h3 className="font-black uppercase tracking-widest text-[10px] text-brand-blue">Strengths & Keywords</h3>
+                      <h3 className="text-[12px] font-bold uppercase tracking-widest text-brand-blue">Core Competencies</h3>
                       <div className="space-y-3">
                         <p className="text-xs font-bold text-brand-ink mt-2">Top Strengths</p>
                         <ul className="space-y-2">
@@ -773,7 +776,7 @@ export default function App() {
                       </div>
                     </div>
                     <div className="glass p-8 rounded-[32px] space-y-4">
-                      <h3 className="font-black uppercase tracking-widest text-[10px] text-brand-blue">Feedback & Improvements</h3>
+                      <h3 className="text-[12px] font-bold uppercase tracking-widest text-brand-blue">Growth Protocol</h3>
                       <div className="space-y-3">
                         <ul className="space-y-2">
                           {analysis.actionableImprovements?.map((f, i) => (
@@ -803,7 +806,7 @@ export default function App() {
           ) : dashboardTab === 'path' ? (
             <div className="space-y-8 max-w-5xl">
               <header>
-                <h1 className="text-3xl font-display font-black text-brand-ink tracking-tight">Smart Career Roadmap</h1>
+                <h1 className="text-[32px] font-display font-bold text-brand-blue-heading tracking-tight">Career Architecture</h1>
                 <p className="text-brand-muted text-sm mt-1 font-medium">AI-driven learning paths tailored to your current skill topology and target roles.</p>
               </header>
               <CareerPath 
@@ -814,7 +817,7 @@ export default function App() {
           ) : dashboardTab === 'interview' ? (
             <div className="space-y-8 max-w-5xl">
               <header>
-                <h1 className="text-3xl font-display font-black text-brand-ink tracking-tight">Interview Simulation</h1>
+                <h1 className="text-[32px] font-display font-bold text-brand-blue-heading tracking-tight">Interview Simulation</h1>
                 <p className="text-brand-muted text-sm mt-1 font-medium">Test your depth against our adversarial AI interviewer. Zero-risk practice environment.</p>
               </header>
               <MockInterview />
@@ -825,18 +828,18 @@ export default function App() {
             <div className="flex-[2] space-y-10 w-full">
               <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="space-y-1">
-                  <h1 className="text-4xl font-display font-black text-brand-ink tracking-tight">
+                  <h1 className="text-[40px] font-display font-bold text-brand-blue-heading tracking-tight">
                     Welcome back, {user.displayName?.split(' ')[0]}
                   </h1>
                 </div>
                 <div className="flex gap-2">
                   {userProfile?.linkedin && (
-                    <a href={userProfile.linkedin.startsWith('http') ? userProfile.linkedin : `https://${userProfile.linkedin}`} target="_blank" rel="noopener noreferrer" className="p-2.5 bg-white rounded-2xl border border-brand-border text-[#0077b5] hover:shadow-md transition-shadow">
+                    <a href={userProfile.linkedin.startsWith('http') ? userProfile.linkedin : `https://${userProfile.linkedin}`} target="_blank" rel="noopener noreferrer" className="p-3 bg-white rounded-xl border border-brand-border text-[#0077b5] hover:shadow-md transition-all hover:-translate-y-0.5">
                       <Linkedin className="w-4 h-4" />
                     </a>
                   )}
                   {userProfile?.github && (
-                    <a href={userProfile.github.startsWith('http') ? userProfile.github : `https://${userProfile.github}`} target="_blank" rel="noopener noreferrer" className="p-2.5 bg-white rounded-2xl border border-brand-border text-[#333] hover:shadow-md transition-shadow">
+                    <a href={userProfile.github.startsWith('http') ? userProfile.github : `https://${userProfile.github}`} target="_blank" rel="noopener noreferrer" className="p-3 bg-white rounded-xl border border-brand-border text-[#333] hover:shadow-md transition-all hover:-translate-y-0.5">
                       <Github className="w-4 h-4" />
                     </a>
                   )}
@@ -845,12 +848,12 @@ export default function App() {
 
               <section className="space-y-6">
                 <div className="flex justify-between items-end">
-                  <h2 className="text-2xl font-display font-black text-brand-ink">Active Curriculum</h2>
+                  <h2 className="text-[24px] font-display font-bold text-brand-blue-heading">Active Curriculum</h2>
                   <button 
                     onClick={() => setDashboardTab('my_courses')}
-                    className="text-[10px] font-black uppercase tracking-widest text-brand-blue flex items-center gap-2 hover:opacity-70 transition-opacity"
+                    className="text-[12px] font-bold uppercase tracking-widest text-brand-blue flex items-center gap-2 hover:opacity-70 transition-opacity"
                   >
-                    View Enrolled <ChevronRight className="w-3 h-3" />
+                    View Enrolled <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
                 
@@ -863,7 +866,7 @@ export default function App() {
                       isCompleted={completedCourses.includes(course.id)}
                       progress={enrollments[course.id]?.progress || 0}
                       onEnroll={handleEnrollWithPin}
-                      onComplete={markCourseComplete}
+                      onComplete={(id, s) => markCourseComplete(id, s || 100)} // Fallback or direct completion
                       onView={(c) => setActiveCourse(c)}
                       userName={user.displayName || "Learner"}
                     />
@@ -875,14 +878,14 @@ export default function App() {
             {/* Right Column: AI Analysis & Tools */}
             <div className="flex-1 space-y-8 w-full">
               {/* Score Chart Widget */}
-              <div className="glass p-8 rounded-[40px] border border-white/50 flex flex-col items-center text-center space-y-6">
-                <h3 className="text-sm font-black uppercase tracking-widest text-brand-ink">Resume Score</h3>
+              <div className="glass p-8 rounded-[32px] border border-white/50 flex flex-col items-center text-center space-y-6 card-shadow">
+                <h3 className="text-[12px] font-bold uppercase tracking-widest text-brand-blue-heading">Resume Performance</h3>
                 <ResumeScoreChart score={analysis?.atsScore || 0} />
                 <div className="space-y-2">
-                  <p className="text-xs font-black text-brand-ink">
+                  <p className="text-[15px] font-bold text-brand-ink">
                     {analysis ? 'Optimized for Hiring' : 'Analysis Pending'}
                   </p>
-                  <p className="text-[10px] font-medium text-brand-muted max-w-[180px]">
+                  <p className="text-[12px] font-medium text-brand-muted max-w-[200px]">
                     {analysis 
                       ? `Your resume has been successfully analyzed and scored for compatibility.` 
                       : 'Upload your latest resume to analyze your ecosystem positioning.'}
@@ -891,28 +894,28 @@ export default function App() {
               </div>
 
               {/* Resume Widget */}
-              <div className="glass p-8 rounded-[40px] border border-white/50 space-y-6 overflow-hidden relative">
+              <div className="glass p-8 rounded-[32px] border border-white/50 space-y-6 overflow-hidden relative card-shadow">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 bg-brand-blue/10 rounded-2xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-brand-blue/10 rounded-xl flex items-center justify-center">
                     <Search className="w-5 h-5 text-brand-blue" />
                   </div>
-                  <h3 className="text-sm font-black uppercase tracking-widest text-brand-ink">Analyzer</h3>
+                  <h3 className="text-[12px] font-bold uppercase tracking-widest text-brand-blue-heading">AI Analyzer</h3>
                 </div>
                 
                 <ResumeUploader onAnalysisComplete={handleAnalysisComplete} />
               </div>
 
               {/* Stats Widget */}
-              <div className="glass p-8 rounded-[40px] border border-white/50 space-y-6">
-                <h3 className="text-sm font-black uppercase tracking-widest text-brand-ink">Platform Stats</h3>
+              <div className="glass p-8 rounded-[32px] border border-white/50 space-y-6 card-shadow">
+                <h3 className="text-[12px] font-bold uppercase tracking-widest text-brand-blue-heading">Platform Engagement</h3>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-brand-blue-light/40 p-4 rounded-3xl border border-brand-border/50">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-brand-muted mb-1">Courses</p>
-                    <p className="text-xl font-display font-black text-brand-ink">{completedCourses.length}</p>
+                  <div className="bg-brand-blue/5 p-4 rounded-2xl border border-brand-blue/10 transition-colors hover:bg-brand-blue/10">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-brand-muted mb-1">Courses</p>
+                    <p className="text-[24px] font-display font-bold text-brand-blue-heading">{completedCourses.length}</p>
                   </div>
-                  <div className="bg-brand-blue-light/40 p-4 rounded-3xl border border-brand-border/50">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-brand-muted mb-1">XP Points</p>
-                    <p className="text-xl font-display font-black text-brand-ink">
+                  <div className="bg-brand-blue/5 p-4 rounded-2xl border border-brand-blue/10 transition-colors hover:bg-brand-blue/10">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-brand-muted mb-1">Cred Points</p>
+                    <p className="text-[24px] font-display font-bold text-brand-blue-heading">
                       {completedCourses.reduce((acc, id) => acc + (COURSES.find(c => c.id === id)?.points || 0), 0)}
                     </p>
                   </div>
@@ -923,7 +926,7 @@ export default function App() {
               {completedCourses.length > 0 && (
                 <div className="glass p-8 rounded-[40px] border border-white/50 space-y-6">
                   <div className="flex justify-between items-center">
-                    <h3 className="text-sm font-black uppercase tracking-widest text-brand-ink">Certificates</h3>
+                    <h3 className="text-[13px] font-bold uppercase tracking-widest text-brand-blue-heading">Certificates</h3>
                     <Trophy className="w-4 h-4 text-amber-500" />
                   </div>
                   <div className="space-y-4">
@@ -948,7 +951,7 @@ export default function App() {
           </div>
         )}
 
-        <footer className="pt-10 text-center text-brand-muted text-[10px] font-black uppercase tracking-[0.2em] opacity-40">
+        <footer className="pt-12 pb-12 text-center text-brand-muted text-[11px] font-bold uppercase tracking-[0.2em] opacity-40">
           © 2026 Skill to Hire Platform — Built with Gemini 1.5 Pro
         </footer>
       </main>
@@ -958,95 +961,106 @@ export default function App() {
 
   // Home Page
   if (view === 'home') return (
-    <div className="min-h-screen bg-brand-cream font-sans">
-      <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center py-5 px-6 md:px-16 bg-brand-cream/90 backdrop-blur-xl border-b border-brand-border">
+    <div className="min-h-screen bg-brand-cream font-sans selection:bg-brand-blue/30 overflow-x-hidden">
+      <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-7xl flex justify-between items-center py-4 px-8 bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[24px]">
         <div className="flex items-center gap-2">
-          <div className="font-display font-black text-2xl tracking-tighter text-brand-ink">
+          <div className="font-display font-extrabold text-[24px] tracking-tight text-brand-blue-heading">
             Skill<span className="text-brand-blue">toHire</span>
           </div>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-8">
+          {['Features', 'Roadmap', 'Interviews', 'Success Stories'].map(item => (
+            <a key={item} href="#" className="font-semibold text-[15px] text-brand-ink/70 hover:text-brand-blue transition-colors">{item}</a>
+          ))}
+        </div>
+        <div className="flex items-center gap-3">
           <button 
             onClick={() => setView('login')}
-            className="text-sm font-bold text-brand-ink px-6 py-2.5 rounded-full border-1.5 border-brand-ink hover:bg-brand-ink hover:text-white transition-all"
+            className="text-[15px] font-bold text-brand-blue-heading px-5 py-2 hover:bg-brand-blue/5 rounded-full transition-all"
           >
             Log In
           </button>
           <button 
             onClick={() => setView('register')}
-            className="text-sm font-bold text-white bg-brand-blue px-6 py-2.5 rounded-full shadow-lg shadow-blue-100 hover:bg-brand-blue-dark transition-all"
+            className="text-[15px] font-bold text-white bg-brand-blue px-6 py-2.5 rounded-full shadow-[0_10px_25px_-5px_rgba(26,110,245,0.4)] hover:shadow-[0_15px_30px_-5px_rgba(26,110,245,0.5)] hover:scale-[1.05] active:scale-[0.98] transition-all btn-premium"
           >
-            Get Started
+            Join Now
           </button>
         </div>
       </nav>
 
-      <div className="hero pt-44 pb-20 px-8 flex flex-col items-center text-center">
+      <div className="relative pt-44 pb-32 px-8 flex flex-col items-center text-center overflow-hidden">
+        {/* Background Decorative Elements */}
+        <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-brand-blue/5 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-brand-blue/10 rounded-full blur-[100px] pointer-events-none" />
+        
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 px-4 py-2 border border-blue-200 bg-brand-blue/5 text-brand-blue rounded-full text-xs font-bold mb-10"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-brand-blue/5 text-brand-blue border border-brand-blue/10 rounded-full text-xs font-bold mb-8 shadow-sm"
         >
-          <span className="w-2 h-2 rounded-full bg-brand-blue animate-blink" />
-          AI-Powered Career Platform
+          <Sparkles className="w-3.5 h-3.5" />
+          The future of hiring is here
         </motion.div>
         
         <motion.h1 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="font-display font-extrabold text-[clamp(48px,8vw,84px)] leading-[1.05] tracking-tight max-w-4xl"
+          className="font-display font-extrabold text-[clamp(40px,7vw,72px)] leading-[1.05] tracking-tight max-w-5xl text-brand-blue-heading"
         >
-          Build Skills. <br />
-          Get <span className="relative">
-            Hired
-            <span className="absolute bottom-1 left-0 right-0 h-2 bg-brand-accent/40 rounded-full -rotate-1" />
-          </span> Faster.
+          Master Skills. <br />
+          Bridge the <span className="text-brand-blue relative">
+            Career Gap
+            <svg className="absolute -bottom-2 left-0 w-full h-3 text-brand-blue/20" viewBox="0 0 100 10" preserveAspectRatio="none">
+              <path d="M0 5 Q 25 0, 50 5 T 100 5" fill="none" stroke="currentColor" strokeWidth="4" />
+            </svg>
+          </span> with AI.
         </motion.h1>
 
         <motion.p 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="mt-8 text-xl text-brand-muted max-w-lg leading-relaxed font-medium"
+          className="mt-8 text-lg md:text-xl text-brand-muted max-w-2xl leading-relaxed font-medium"
         >
-          The AI platform that bridges the gap between your skills and your dream job. Learn, practice, and get placed.
+          The intelligent platform that maps your potential. Analyze resumes, follow custom roadmaps, and practice with state-of-the-art AI interviewers.
         </motion.p>
 
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="mt-12 flex gap-4 flex-wrap justify-center"
+          className="mt-12 flex gap-5 flex-wrap justify-center"
         >
           <button 
             onClick={() => setView('register')}
-            className="px-10 py-5 bg-brand-blue text-white rounded-full font-bold text-lg shadow-xl shadow-blue-200 hover:bg-brand-blue-dark transition-all active:scale-95"
+            className="px-10 py-5 bg-brand-blue text-white rounded-full font-bold text-lg shadow-[0_20px_40px_-10px_rgba(26,110,245,0.4)] hover:shadow-[0_25px_50px_-10px_rgba(26,110,245,0.5)] hover:scale-[1.05] active:scale-[0.98] transition-all btn-premium"
           >
-            Start for Free →
+            Start Your Journey →
           </button>
           <button 
             onClick={() => setView('login')}
-            className="px-10 py-5 bg-white text-brand-ink border-1.5 border-brand-border rounded-full font-bold text-lg hover:border-brand-ink transition-all active:scale-95"
+            className="px-10 py-5 bg-white text-brand-ink border border-brand-border rounded-full font-bold text-lg hover:border-brand-blue hover:text-brand-blue transition-all active:scale-95"
           >
-            Sign In
+            Explore Courses
           </button>
         </motion.div>
       </div>
 
-      <div className="bg-white border-t border-brand-border flex flex-wrap justify-center gap-12 py-16 px-10">
+      <div className="bg-white/50 backdrop-blur-md border-y border-brand-border flex flex-wrap justify-center gap-16 py-20 px-10">
         {[
-          { icon: '🤖', label: 'AI Skill Analysis', sub: 'Identify gaps instantly' },
-          { icon: '📚', label: 'Smart Learning', sub: 'Personalised roadmaps' },
-          { icon: '🎯', label: 'Interview Prep', sub: 'AI mock simulations' }
+          { icon: <Search className="w-6 h-6" />, label: 'AI Resume Analysis', sub: 'Instant ATS feedback' },
+          { icon: <Map className="w-6 h-6" />, label: 'Guided Roadmaps', sub: 'Step-by-step mastery' },
+          { icon: <MessageSquare className="w-6 h-6" />, label: 'Mock Interviews', sub: 'Adversarial AI practice' }
         ].map((feat, i) => (
-          <div key={i} className="flex items-center gap-4 group">
-            <div className="w-12 h-12 bg-brand-cream rounded-2xl flex items-center justify-center text-2xl group-hover:bg-brand-blue/10 transition-colors">
+          <div key={i} className="flex items-center gap-5 group">
+            <div className="w-14 h-14 bg-white shadow-md rounded-2xl flex items-center justify-center text-brand-blue group-hover:bg-brand-blue group-hover:text-white transition-all duration-300">
               {feat.icon}
             </div>
-            <div className="flex flex-col">
-              <span className="font-bold text-sm text-brand-ink tracking-tight">{feat.label}</span>
-              <span className="text-xs text-brand-muted font-medium">{feat.sub}</span>
+            <div className="flex flex-col text-left">
+              <span className="font-bold text-[18px] text-brand-blue-heading tracking-tight">{feat.label}</span>
+              <span className="text-sm text-brand-muted font-medium">{feat.sub}</span>
             </div>
           </div>
         ))}

@@ -10,7 +10,7 @@ interface CourseCardProps {
   isCompleted: boolean;
   progress: number;
   onEnroll: (courseId: string) => void;
-  onComplete: (courseId: string) => void;
+  onComplete: (courseId: string, score?: number) => void;
   onView: (course: Course) => void;
   userName: string;
 }
@@ -125,42 +125,42 @@ export const CourseCard: React.FC<CourseCardProps> = ({
   };
 
   return (
-    <div className="glass p-6 rounded-[32px] border border-white/40 flex flex-col group hover:shadow-2xl transition-all duration-300">
+    <div className="glass card-shadow p-6 rounded-[32px] border border-white/40 flex flex-col group transition-all duration-300">
       <div className="flex justify-between items-start mb-4">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest bg-white/50 border-white/20">
-          <BookOpen className="w-3 h-3 text-brand-blue" />
-          <span className="text-brand-ink">{course.domain}</span>
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-bold uppercase tracking-tight bg-white/50 border-brand-border">
+          <BookOpen className="w-3.5 h-3.5 text-brand-blue" />
+          <span className="text-brand-blue-heading">{course.domain}</span>
         </div>
-        <div className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-brand-muted">
-          <Trophy className="w-3 h-3 text-amber-500" />
-          <span>{course.points} PTS</span>
+        <div className="flex items-center gap-1 text-[11px] font-bold uppercase text-brand-muted">
+          <Trophy className="w-3.5 h-3.5 text-amber-500" />
+          <span>{course.points} XP</span>
         </div>
       </div>
       
       <div className="mb-4">
-        <h3 className="text-xl font-display font-black text-brand-ink mb-1 group-hover:text-brand-blue transition-colors">
+        <h3 className="text-[20px] font-display font-bold text-brand-blue-heading mb-1 transition-colors group-hover:text-brand-blue leading-tight">
           {course.title}
         </h3>
         <div className={cn(
-          "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[9px] font-black uppercase tracking-widest",
+          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase",
           status.color
         )}>
-          <span className="w-1 h-1 rounded-full bg-current" />
+          <span className="w-1.5 h-1.5 rounded-full bg-current" />
           {status.label}
         </div>
       </div>
       
-      <p className="text-brand-muted text-xs mb-6 line-clamp-2 leading-relaxed h-8">
+      <p className="text-brand-muted text-[14px] mb-6 line-clamp-2 leading-relaxed h-10 font-normal">
         {course.description}
       </p>
       
       {isEnrolled && !isCompleted && (
         <div className="space-y-2 mb-6">
-          <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-brand-muted">
-            <span>Progress</span>
+          <div className="flex justify-between text-[11px] font-bold uppercase text-brand-muted">
+            <span>Course Progress</span>
             <span>{progress}%</span>
           </div>
-          <div className="h-1.5 bg-brand-blue-light/50 rounded-full overflow-hidden">
+          <div className="h-1.5 bg-brand-cream rounded-full overflow-hidden border border-brand-border/30">
             <div 
               className="h-full bg-brand-blue transition-all duration-700 ease-out" 
               style={{ width: `${progress}%` }}
@@ -170,22 +170,22 @@ export const CourseCard: React.FC<CourseCardProps> = ({
       )}
 
       {isCompleted && (
-        <div className="h-1.5 bg-green-100 rounded-full overflow-hidden mb-6">
-          <div className="h-full bg-green-500" style={{ width: '100%' }} />
+        <div className="h-1.5 bg-emerald-50 rounded-full overflow-hidden mb-6 border border-emerald-100">
+          <div className="h-full bg-emerald-500" style={{ width: '100%' }} />
         </div>
       )}
 
-      <div className="flex items-center gap-4 text-brand-muted text-[10px] font-black uppercase tracking-widest mb-6 mt-auto">
+      <div className="flex items-center gap-4 text-brand-muted text-[11px] font-bold uppercase mb-6 mt-auto">
         <div className="flex items-center gap-1.5">
-          <Clock className="w-3 h-3" />
-          <span>{course.duration}</span>
+          <Clock className="w-3.5 h-3.5" />
+          <span>{course.duration} TOTAL</span>
         </div>
       </div>
 
       {!isEnrolled ? (
         <button 
           onClick={() => onEnroll(course.id)}
-          className="w-full py-3.5 bg-brand-blue text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-100 hover:bg-brand-blue-dark transition-all active:scale-95"
+          className="w-full py-4 bg-brand-blue text-white rounded-2xl font-bold text-[14px] shadow-[0_10px_20px_-5px_rgba(26,110,245,0.3)] hover:bg-brand-blue-dark transition-all active:scale-95"
         >
           Enroll Now
         </button>
@@ -193,25 +193,25 @@ export const CourseCard: React.FC<CourseCardProps> = ({
         <div className="flex gap-2 w-full">
           <button 
             onClick={() => onView(course)}
-            className="flex-1 py-3.5 bg-brand-cream border border-brand-border text-brand-ink rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-brand-blue-light transition-all active:scale-95 flex items-center justify-center gap-2"
+            className="flex-1 py-4 bg-brand-cream border border-brand-border text-brand-blue-heading rounded-2xl font-bold text-[13px] hover:bg-brand-blue/5 transition-all active:scale-95"
           >
-            Review Theory
+            Review
           </button>
           <button 
             onClick={generateCertificate}
-            className="flex-1 py-3.5 bg-white border border-brand-border text-brand-ink rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-brand-cream transition-all flex items-center justify-center gap-2"
+            className="flex-1 py-4 bg-white border border-brand-border text-brand-blue-heading rounded-2xl font-bold text-[13px] hover:bg-brand-cream transition-all flex items-center justify-center gap-2"
           >
-            <Trophy className="w-3 h-3 text-amber-500" />
+            <Trophy className="w-3.5 h-3.5 text-amber-500" />
             Certificate
           </button>
         </div>
       ) : (
         <button 
           onClick={() => onView(course)}
-          className="w-full py-3.5 bg-brand-accent text-brand-ink rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-emerald-50 hover:opacity-90 transition-all active:scale-95 flex items-center justify-center gap-2"
+          className="w-full py-4 bg-emerald-500 text-white rounded-2xl font-bold text-[14px] shadow-[0_10px_20px_-5px_rgba(16,185,129,0.3)] hover:bg-emerald-600 transition-all active:scale-95 flex items-center justify-center gap-2"
         >
-          <Sparkles className="w-4 h-4 text-brand-blue" />
-          Start Learning
+          <Sparkles className="w-4 h-4" />
+          Continue Learning
         </button>
       )}
     </div>

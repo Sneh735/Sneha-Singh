@@ -31,84 +31,84 @@ const AuthPage = ({
   handleGoogleLogin, 
   handleEmailAuth 
 }: AuthPageProps) => (
-  <div className="min-h-screen bg-[#0a1628] flex items-center justify-center relative overflow-hidden font-sans">
+  <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center relative overflow-hidden font-sans">
     {/* Background Decorative Elements */}
-    <div className="absolute top-[-160px] right-[-100px] w-[500px] h-[500px] bg-brand-blue/10 blur-[120px] rounded-full pointer-events-none" />
-    <div className="absolute bottom-[-120px] left-[-80px] w-[380px] h-[380px] bg-brand-accent/5 blur-[100px] rounded-full pointer-events-none" />
+    <div className="absolute top-[-160px] right-[-100px] w-[500px] h-[500px] bg-brand-blue/5 blur-[120px] rounded-full pointer-events-none" />
+    <div className="absolute bottom-[-120px] left-[-80px] w-[380px] h-[380px] bg-brand-blue/10 blur-[100px] rounded-full pointer-events-none" />
     
     <button 
       onClick={() => setView('home')}
-      className="fixed top-6 left-8 flex items-center gap-2 text-white/60 font-bold text-sm hover:text-white transition-colors"
+      className="fixed top-8 left-8 flex items-center gap-2 text-brand-ink/60 font-bold text-sm hover:text-brand-blue transition-colors px-4 py-2 border border-brand-border rounded-full bg-white shadow-sm"
     >
       <LayoutDashboard className="w-4 h-4 rotate-180" />
-      Back to Home
+      Return Home
     </button>
 
     <motion.div 
       initial={{ opacity: 0, y: 20, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      className="bg-white w-full max-w-[450px] m-4 p-12 rounded-[32px] shadow-2xl relative z-10"
+      className="bg-white w-full max-w-[450px] m-4 p-12 rounded-[40px] shadow-[0_20px_50px_rgba(26,110,245,0.08)] relative z-10 border border-brand-border/40"
     >
-      <div className="text-center font-display font-black text-xl tracking-tighter text-brand-ink mb-10">
+      <div className="text-center font-display font-extrabold text-[22px] tracking-tight text-brand-blue-heading mb-10">
         Skill<span className="text-brand-blue">toHire</span>
       </div>
 
-      <h2 className="font-display font-extrabold text-3xl tracking-tight text-brand-ink leading-none">
+      <h2 className="font-display font-extrabold text-[32px] tracking-tight text-brand-blue-heading leading-tight mb-2">
         {type === 'login' ? 'Welcome back' : 'Create account'}
       </h2>
-      <p className="text-brand-muted text-sm font-medium mt-2 mb-8">
-        {type === 'login' ? 'Sign in to continue your journey' : 'Join thousands building their careers'}
+      <p className="text-brand-muted text-[15px] font-medium mb-10 leading-relaxed">
+        {type === 'login' ? 'Continue your precision learning path.' : 'Start engineering your career with AI.'}
       </p>
 
       {authError && (
-        <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl text-xs font-bold border border-red-100 italic">
+        <div className="mb-8 p-4 bg-red-50 text-red-600 rounded-2xl text-xs font-bold border border-red-100 animate-in fade-in slide-in-from-top-4">
           {authError}
         </div>
       )}
 
       <button 
         onClick={handleGoogleLogin}
-        className="w-full py-3.5 bg-white border border-slate-200 text-[#3c4043] rounded-xl font-bold flex items-center justify-center gap-3 hover:bg-slate-50 transition-all active:scale-95 shadow-sm border-b-2"
+        className="w-full py-4 bg-white border border-brand-border text-brand-ink rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-slate-50 transition-all active:scale-95 shadow-sm hover:shadow-md"
       >
         <img src="https://www.google.com/favicon.ico" className="w-5 h-5" alt="Google" />
-        Continue with Google
+        <span className="text-[14px]">Sign in with Google</span>
       </button>
 
-      <div className="flex items-center gap-4 my-6">
-        <div className="flex-1 h-px bg-slate-100" />
-        <span className="text-[10px] font-black text-brand-muted uppercase tracking-widest">or email interface</span>
-        <div className="flex-1 h-px bg-slate-100" />
+      <div className="flex items-center gap-4 my-8">
+        <div className="flex-1 h-px bg-brand-border/60" />
+        <span className="text-[10px] font-bold text-brand-muted uppercase tracking-[0.2em]">OR EMAIL</span>
+        <div className="flex-1 h-px bg-brand-border/60" />
       </div>
 
-      <form onSubmit={(e) => handleEmailAuth(e, type)} className="space-y-4">
+      <form onSubmit={(e) => handleEmailAuth(e, type)} className="space-y-6">
         {type === 'register' && (
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-brand-ink uppercase tracking-widest pl-1">Full Name</label>
+          <div className="space-y-2">
+            <label className="text-[11px] font-bold text-brand-blue-heading uppercase tracking-widest pl-1">Name</label>
             <input 
               type="text" 
-              placeholder="Your Name" 
+              placeholder="Elon Musk" 
               value={authName}
               onChange={(e) => setAuthName(e.target.value)}
               required
-              className="w-full px-4 py-3 bg-brand-blue-light/30 border border-brand-border rounded-xl font-medium outline-none focus:border-brand-blue transition-colors" 
+              className="w-full px-5 py-4 bg-brand-cream/50 border border-brand-border rounded-2xl font-medium outline-none focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 transition-all text-[14px]" 
             />
           </div>
         )}
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-black text-brand-ink uppercase tracking-widest pl-1">Email Address</label>
+        <div className="space-y-2">
+          <label className="text-[11px] font-bold text-brand-blue-heading uppercase tracking-widest pl-1">Work Email</label>
           <input 
             type="email" 
-            placeholder="you@example.com" 
+            placeholder="name@company.com" 
             value={authEmail}
             onChange={(e) => setAuthEmail(e.target.value)}
             required
-            className="w-full px-4 py-3 bg-brand-blue-light/30 border border-brand-border rounded-xl font-medium outline-none focus:border-brand-blue transition-colors" 
+            className="w-full px-5 py-4 bg-brand-cream/50 border border-brand-border rounded-2xl font-medium outline-none focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 transition-all text-[14px]" 
           />
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <label className="text-[10px] font-black text-brand-ink uppercase tracking-widest pl-1">Password</label>
-            {type === 'login' && <span className="text-[10px] font-bold text-brand-blue cursor-pointer hover:underline">Forgot?</span>}
+            <label className="text-[11px] font-bold text-brand-blue-heading uppercase tracking-widest pl-1">Password</label>
+            {type === 'login' && <span className="text-[11px] font-bold text-brand-blue cursor-pointer hover:underline">Forgot?</span>}
           </div>
           <input 
             type="password" 
@@ -116,24 +116,24 @@ const AuthPage = ({
             value={authPassword}
             onChange={(e) => setAuthPassword(e.target.value)}
             required
-            className="w-full px-4 py-3 bg-brand-blue-light/30 border border-brand-border rounded-xl font-medium outline-none focus:border-brand-blue transition-colors" 
+            className="w-full px-5 py-4 bg-brand-cream/50 border border-brand-border rounded-2xl font-medium outline-none focus:border-brand-blue focus:ring-4 focus:ring-brand-blue/5 transition-all text-[14px]" 
           />
         </div>
 
         <button 
           type="submit"
           disabled={authLoading}
-          className="w-full py-4 bg-brand-blue text-white rounded-xl font-black uppercase tracking-widest text-xs shadow-lg shadow-blue-100 hover:bg-brand-blue-dark transition-all active:scale-95 mt-4 disabled:opacity-50"
+          className="w-full py-4.5 bg-brand-blue text-white rounded-2xl font-bold text-[15px] shadow-[0_15px_30px_-10px_rgba(26,110,245,0.4)] hover:shadow-[0_20px_40px_-10px_rgba(26,110,245,0.5)] transition-all active:scale-95 mt-6 disabled:opacity-50"
         >
-          {authLoading ? 'Processing...' : (type === 'login' ? 'Sign In' : 'Create Account')}
+          {authLoading ? 'Verifying...' : (type === 'login' ? 'Sign In' : 'Create Account')}
         </button>
       </form>
 
-      <div className="mt-8 text-center text-xs font-bold text-brand-muted">
+      <div className="mt-10 text-center text-[14px] font-semibold text-brand-muted">
         {type === 'login' ? (
-          <>New here? <span onClick={() => setView('register')} className="text-brand-blue cursor-pointer hover:underline">Create an account</span></>
+          <>New candidate? <span onClick={() => setView('register')} className="text-brand-blue cursor-pointer hover:underline font-bold">Apply for account</span></>
         ) : (
-          <>Already have an account? <span onClick={() => setView('login')} className="text-brand-blue cursor-pointer hover:underline">Sign in</span></>
+          <>Member already? <span onClick={() => setView('login')} className="text-brand-blue cursor-pointer hover:underline font-bold">Sign in here</span></>
         )}
       </div>
     </motion.div>

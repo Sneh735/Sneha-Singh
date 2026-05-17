@@ -2,5 +2,5 @@
   "name": "Skill to Hire",
   "description": "A comprehensive platform bridging the gap between learning and employment with AI-powered resume analysis, course certifications, and job recommendations.",
   "requestFramePermissions": [],
-  "majorCapabilities": []
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
