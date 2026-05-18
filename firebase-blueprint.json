@@ -106,12 +106,84 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "title", "message", "type", "read"]
+    },
+    "Resume": {
+      "title": "Resume",
+      "description": "User's professional resume data",
+      "type": "object",
+      "properties": {
+        "fullName": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "linkedin": { "type": "string" },
+        "summary": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "technicalSkills": { "type": "array", "items": { "type": "string" } },
+        "nonTechnicalSkills": { "type": "array", "items": { "type": "string" } },
+        "education": { 
+          "type": "array", 
+          "items": { 
+            "type": "object",
+            "properties": {
+              "degree": { "type": "string" },
+              "school": { "type": "string" },
+              "specialization": { "type": "string" },
+              "startYear": { "type": "string" },
+              "endYear": { "type": "string" },
+              "cgpa": { "type": "string" }
+            }
+          } 
+        },
+        "projects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": { "type": "string" },
+              "description": { "type": "string" },
+              "technologies": { "type": "string" },
+              "githubLink": { "type": "string" },
+              "liveDemo": { "type": "string" },
+              "duration": { "type": "string" }
+            }
+          }
+        },
+        "certifications": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": { "type": "string" },
+              "organization": { "type": "string" },
+              "issueDate": { "type": "string" },
+              "pdfUrl": { "type": "string" }
+            }
+          }
+        },
+        "achievements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": { "type": "string" },
+              "description": { "type": "string" },
+              "date": { "type": "string" },
+              "organization": { "type": "string" }
+            }
+          }
+        },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
     }
   },
   "firestore": {
     "/users/{userId}": {
       "schema": "User",
       "description": "Private user profiles"
+    },
+    "/users/{userId}/resume": {
+      "schema": "Resume",
+      "description": "User's detailed resume data"
     },
     "/courses/{courseId}": {
       "schema": "Course",

@@ -47,19 +47,21 @@ import {
   CheckCircle,
   Clock,
   Map,
-  MessageSquare
+  MessageSquare,
+  FileText
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ResumeScoreChart from './components/ResumeScoreChart';
 import { COURSES } from './data/courses';
 import CareerPath from './components/CareerPath';
 import MockInterview from './components/MockInterview';
+import ResumeBuilder from './components/ResumeBuilder';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'home' | 'login' | 'register'>('home');
-  const [dashboardTab, setDashboardTab] = useState<'overview' | 'profile' | 'my_courses' | 'path' | 'interview' | 'resume'>('overview');
+  const [dashboardTab, setDashboardTab] = useState<'overview' | 'profile' | 'my_courses' | 'path' | 'interview' | 'resume' | 'builder'>('overview');
   const [analysis, setAnalysis] = useState<ResumeAnalysis | null>(null);
   const [completedCourses, setCompletedCourses] = useState<string[]>([]);
   const [enrollments, setEnrollments] = useState<Record<string, { progress: number, status: string }>>({});
@@ -469,6 +471,7 @@ export default function App() {
             { id: 'path', icon: Map, label: 'Career Roadmap' },
             { id: 'interview', icon: MessageSquare, label: 'Mock Interview' },
             { id: 'resume', icon: Search, label: 'Resume Analysis' },
+            { id: 'builder', icon: FileText, label: 'Resume Pro' },
             { id: 'profile', icon: Settings, label: 'Settings' }
           ].map(item => (
             <button 
@@ -822,6 +825,14 @@ export default function App() {
               </header>
               <MockInterview />
             </div>
+          ) : dashboardTab === 'builder' ? (
+            <div className="space-y-8">
+              <header>
+                <h1 className="text-[32px] font-display font-bold text-brand-blue-heading tracking-tight">Portfolio Architect</h1>
+                <p className="text-brand-muted text-sm mt-1 font-medium">Create a high-impact, ATS-shielded resume for global opportunities.</p>
+              </header>
+              <ResumeBuilder />
+            </div>
           ) : (
           <div className="flex flex-col lg:flex-row gap-8 items-start">
             {/* Left Column: Learning & Courses */}
@@ -1051,6 +1062,7 @@ export default function App() {
       <div className="bg-white/50 backdrop-blur-md border-y border-brand-border flex flex-wrap justify-center gap-16 py-20 px-10">
         {[
           { icon: <Search className="w-6 h-6" />, label: 'AI Resume Analysis', sub: 'Instant ATS feedback' },
+          { icon: <FileText className="w-6 h-6" />, label: 'Resume Pro', sub: 'Build professional resumes' },
           { icon: <Map className="w-6 h-6" />, label: 'Guided Roadmaps', sub: 'Step-by-step mastery' },
           { icon: <MessageSquare className="w-6 h-6" />, label: 'Mock Interviews', sub: 'Adversarial AI practice' }
         ].map((feat, i) => (
