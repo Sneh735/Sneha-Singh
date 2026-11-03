@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = 3005;
 
   app.use(express.json({ limit: "50mb" }));
 
@@ -23,7 +23,7 @@ async function startServer() {
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: { middlewareMode: true, hmr: { port: 24680 } },
       appType: "spa",
     });
     app.use(vite.middlewares);

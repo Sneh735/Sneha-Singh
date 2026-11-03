@@ -48,7 +48,8 @@ import {
   Clock,
   Map,
   MessageSquare,
-  FileText
+  FileText,
+  Briefcase
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ResumeScoreChart from './components/ResumeScoreChart';
@@ -56,12 +57,14 @@ import { COURSES } from './data/courses';
 import CareerPath from './components/CareerPath';
 import MockInterview from './components/MockInterview';
 import ResumeBuilder from './components/ResumeBuilder';
+import JobMatching from './components/JobMatching';
+import VirtualCareerAssistant from './components/VirtualCareerAssistant';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'home' | 'login' | 'register'>('home');
-  const [dashboardTab, setDashboardTab] = useState<'overview' | 'profile' | 'my_courses' | 'path' | 'interview' | 'resume' | 'builder'>('overview');
+  const [dashboardTab, setDashboardTab] = useState<'overview' | 'profile' | 'my_courses' | 'path' | 'interview' | 'resume' | 'builder' | 'job_match'>('overview');
   const [analysis, setAnalysis] = useState<ResumeAnalysis | null>(null);
   const [completedCourses, setCompletedCourses] = useState<string[]>([]);
   const [enrollments, setEnrollments] = useState<Record<string, { progress: number, status: string }>>({});
@@ -470,6 +473,7 @@ export default function App() {
             { id: 'my_courses', icon: GraduationCap, label: 'My Learning' },
             { id: 'path', icon: Map, label: 'Career Roadmap' },
             { id: 'interview', icon: MessageSquare, label: 'Mock Interview' },
+            { id: 'job_match', icon: Briefcase, label: 'Job Matching' },
             { id: 'resume', icon: Search, label: 'Resume Analysis' },
             { id: 'builder', icon: FileText, label: 'Resume Pro' },
             { id: 'profile', icon: Settings, label: 'Settings' }
@@ -825,6 +829,14 @@ export default function App() {
               </header>
               <MockInterview />
             </div>
+          ) : dashboardTab === 'job_match' ? (
+            <div className="space-y-8 max-w-6xl">
+              <JobMatching 
+                userSkills={userProfile?.keySkills?.length ? userProfile.keySkills : (analysis?.keywordAnalysis?.foundKeywords || ['JavaScript', 'HTML', 'CSS', 'React', 'Java', 'SQL', 'Python'])} 
+                completedCourses={completedCourses}
+                onNavigateToCourse={() => setDashboardTab('my_courses')}
+              />
+            </div>
           ) : dashboardTab === 'builder' ? (
             <div className="space-y-8">
               <header>
@@ -966,6 +978,7 @@ export default function App() {
           © 2026 Skill to Hire Platform — Built with Gemini 1.5 Pro
         </footer>
       </main>
+      <VirtualCareerAssistant />
     </div>
   </div>
 );
@@ -974,7 +987,8 @@ export default function App() {
   if (view === 'home') return (
     <div className="min-h-screen bg-brand-cream font-sans selection:bg-brand-blue/30 overflow-x-hidden">
       <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-7xl flex justify-between items-center py-4 px-8 bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[24px]">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <img src="/logo.svg" alt="Skill to Hire Logo" className="w-9 h-9 rounded-xl shadow-md shadow-blue-200" />
           <div className="font-display font-extrabold text-[24px] tracking-tight text-brand-blue-heading">
             Skill<span className="text-brand-blue">toHire</span>
           </div>

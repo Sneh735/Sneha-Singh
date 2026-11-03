@@ -442,5 +442,95 @@ export const COURSES: Course[] = [
       options: ["Event Loop", "Cluster Module", "FS Module", "NPM"],
       correctAnswer: i % 2 === 0 ? 0 : 1
     }))
+  },
+  {
+    id: 'sql-901',
+    title: "SQL & Database Mastery",
+    description: "Database Certification: Queries, Complex Joins, Indexing, ACID Transactions, and Schema Normalization.",
+    image: "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=800&auto=format&fit=crop&q=60",
+    duration: "5 Hours",
+    difficulty: "Intermediate",
+    domain: "Database",
+    points: 1150,
+    theoryPages: [],
+    passingScore: 12,
+    quiz: [
+      {
+        question: "Which SQL clause is used to filter rows after an aggregation like GROUP BY has taken place?",
+        options: ["WHERE", "HAVING", "ORDER BY", "FILTER BY"],
+        correctAnswer: 1
+      },
+      {
+        question: "What is the primary difference between TRUNCATE and DELETE in SQL?",
+        options: ["DELETE is faster than TRUNCATE", "TRUNCATE removes all rows without logging individual row deletions, making it faster", "TRUNCATE allows a WHERE clause", "There is no difference"],
+        correctAnswer: 1
+      },
+      {
+        question: "Which JOIN returns all records from the left table, and the matched records from the right table, filling with NULL if no match?",
+        options: ["INNER JOIN", "FULL OUTER JOIN", "LEFT OUTER JOIN", "CROSS JOIN"],
+        correctAnswer: 2
+      },
+      {
+        question: "In relational database design, what does the 'A' in ACID transactions stand for?",
+        options: ["Availability", "Atomicity", "Authentication", "Accuracy"],
+        correctAnswer: 1
+      },
+      {
+        question: "Which normalization form requires that all non-key attributes are fully functionally dependent on the entire Primary Key (no partial dependencies)?",
+        options: ["1st Normal Form (1NF)", "2nd Normal Form (2NF)", "3rd Normal Form (3NF)", "Boyce-Codd Normal Form (BCNF)"],
+        correctAnswer: 1
+      },
+      {
+        question: "How does a Clustered Index alter table data storage in SQL Server / MySQL InnoDB?",
+        options: ["It physically sorts and stores data rows in the table based on the key values", "It stores pointers in a separate table without sorting data", "It disables write operations on the table", "It only indexes text columns"],
+        correctAnswer: 0
+      },
+      {
+        question: "Which SQL statement is recommended to protect backend database queries from SQL Injection vulnerabilities?",
+        options: ["String concatenation", "Prepared Statements (Parameterized Queries)", "Base64 encoding", "Regular Expression replacement"],
+        correctAnswer: 1
+      },
+      {
+        question: "What is the output of COUNT(*) vs COUNT(column_name) when the column contains NULL values?",
+        options: ["Both count NULL values", "COUNT(*) counts all rows; COUNT(column_name) ignores NULLs", "COUNT(*) ignores NULLs", "COUNT(column_name) throws an error"],
+        correctAnswer: 1
+      },
+      {
+        question: "Which SQL command is used to add a new column to an existing table?",
+        options: ["MODIFY TABLE table_name ADD col_name datatype;", "ALTER TABLE table_name ADD col_name datatype;", "UPDATE TABLE table_name ADD col_name datatype;", "INSERT COLUMN col_name INTO table_name;"],
+        correctAnswer: 1
+      },
+      {
+        question: "In SQL, which window function provides a continuous rank without gaps for duplicate values?",
+        options: ["ROW_NUMBER()", "RANK()", "DENSE_RANK()", "LEAD()"],
+        correctAnswer: 2
+      },
+      {
+        question: "What type of key uniquely identifies each record and enforces non-null, unique constraint by default?",
+        options: ["Foreign Key", "Primary Key", "Candidate Key", "Super Key"],
+        correctAnswer: 1
+      },
+      {
+        question: "Which constraint ensures that all values in a column satisfy a specific Boolean condition (e.g., age >= 18)?",
+        options: ["UNIQUE", "NOT NULL", "CHECK", "DEFAULT"],
+        correctAnswer: 2
+      },
+      {
+        question: "What does the SQL command EXPLAIN (or EXPLAIN PLAN) do?",
+        options: ["Explains table documentation to user", "Shows the query execution plan and index usage determined by the optimizer", "Executes the query and prints human feedback", "Validates SQL syntax without connection"],
+        correctAnswer: 1
+      },
+      {
+        question: "Which SQL operator is used to search for a specified pattern in a column using wildcards (% and _)?",
+        options: ["IN", "LIKE", "BETWEEN", "MATCHES"],
+        correctAnswer: 1
+      },
+      {
+        question: "What is a View in SQL?",
+        options: ["A physical copy of the database", "A virtual table based on the result-set of an SQL query", "A backup snapshot stored on disk", "A temporary trigger"],
+        correctAnswer: 1
+      }
+    ]
   }
 ];
+

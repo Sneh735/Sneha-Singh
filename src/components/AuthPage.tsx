@@ -49,8 +49,11 @@ const AuthPage = ({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       className="bg-white w-full max-w-[450px] m-4 p-12 rounded-[40px] shadow-[0_20px_50px_rgba(26,110,245,0.08)] relative z-10 border border-brand-border/40"
     >
-      <div className="text-center font-display font-extrabold text-[22px] tracking-tight text-brand-blue-heading mb-10">
-        Skill<span className="text-brand-blue">toHire</span>
+      <div className="flex items-center justify-center gap-2 mb-10">
+        <img src="/logo.svg" alt="Skill to Hire Logo" className="w-8 h-8 rounded-xl shadow-md shadow-blue-200" />
+        <div className="text-center font-display font-extrabold text-[22px] tracking-tight text-brand-blue-heading">
+          Skill<span className="text-brand-blue">toHire</span>
+        </div>
       </div>
 
       <h2 className="font-display font-extrabold text-[32px] tracking-tight text-brand-blue-heading leading-tight mb-2">

@@ -46,7 +46,19 @@ export default function ResumeUploader({ onAnalysisComplete }: ResumeUploaderPro
       onAnalysisComplete(analysis);
     } catch (err: any) {
       console.error(err);
-      setError(err instanceof Error ? err.message : "Failed to analyze resume. Please try again.");
+      let errMsg = "Failed to analyze resume. Please try again.";
+      if (err instanceof Error) {
+        errMsg = err.message;
+        try {
+          const parsed = JSON.parse(errMsg);
+          if (parsed?.error?.message) {
+            errMsg = parsed.error.message;
+          }
+        } catch {
+          // keep original message
+        }
+      }
+      setError(errMsg);
     } finally {
       setIsUploading(false);
     }
