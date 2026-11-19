@@ -531,6 +531,346 @@ export const COURSES: Course[] = [
         correctAnswer: 1
       }
     ]
+  },
+  {
+    id: 'cloud-1001',
+    title: "Cloud & DevOps (AWS, Docker, K8s)",
+    description: "DevOps Certification: Containerization, Kubernetes Pod Orchestration, AWS Core Services (EC2, S3, IAM), and CI/CD Pipelines.",
+    image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&auto=format&fit=crop&q=60",
+    duration: "7 Hours",
+    difficulty: "Advanced",
+    domain: "Cloud & DevOps",
+    category: "Technical",
+    points: 1350,
+    theoryPages: [],
+    passingScore: 12,
+    quiz: [
+      {
+        question: "What is the primary architectural purpose of Docker containerization compared to a traditional Virtual Machine?",
+        options: ["Containers share the host OS kernel, making them lightweight and fast to boot", "Containers emulate complete hardware including BIOS and virtual drivers", "Containers run only Python applications", "Containers require hypervisor hardware virtualization"],
+        correctAnswer: 0
+      },
+      {
+        question: "In Kubernetes architecture, which master control plane component is responsible for distributing workloads across worker nodes?",
+        options: ["kube-proxy", "kube-scheduler", "kubelet", "etcd"],
+        correctAnswer: 1
+      },
+      {
+        question: "Which AWS service provides serverless compute execution triggered by HTTP requests or cloud events without managing EC2 instances?",
+        options: ["AWS EC2", "AWS Lambda", "AWS ECS", "AWS RDS"],
+        correctAnswer: 1
+      },
+      {
+        question: "In CI/CD pipelines, what is the main goal of the Continuous Integration (CI) stage?",
+        options: ["Automatically charge customer credit cards", "Automatically merge code, run automated tests, and detect syntax/regression bugs early", "Deploy untested code to production", "Scale down EC2 instances"],
+        correctAnswer: 1
+      },
+      {
+        question: "Which file format is standard for defining multi-container configurations in local development environments?",
+        options: ["Dockerfile", "docker-compose.yml", "package.json", "k8s-pod.xml"],
+        correctAnswer: 1
+      },
+      {
+        question: "What is the default storage class for frequently accessed data in AWS Simple Storage Service (S3)?",
+        options: ["S3 Glacier Deep Archive", "S3 Standard", "S3 One Zone-IA", "S3 Snowball"],
+        correctAnswer: 1
+      },
+      {
+        question: "In Kubernetes, what is the smallest deployable computing unit that can be created and managed?",
+        options: ["Deployment", "Pod", "Cluster", "Service"],
+        correctAnswer: 1
+      },
+      {
+        question: "Which Infrastructure as Code (IaC) declarative tool uses HCL to provision cloud infrastructure across AWS, Azure, and GCP?",
+        options: ["Ansible", "Terraform", "Docker Swarm", "Puppet"],
+        correctAnswer: 1
+      },
+      {
+        question: "What does a Kubernetes Ingress controller manage?",
+        options: ["Internal pod-to-pod memory access", "External HTTP/HTTPS access routing to services within the cluster", "Container disk formatting", "Physical node cooling systems"],
+        correctAnswer: 1
+      },
+      {
+        question: "What is Blue-Green Deployment strategy?",
+        options: ["Deploying code on blue terminals only", "Maintaining two identical production environments to switch traffic with zero downtime", "Deploying software only on weekends", "Rolling back versions on every deploy"],
+        correctAnswer: 1
+      },
+      {
+        question: "In AWS IAM, what principle recommends granting only the minimum permissions required to perform a task?",
+        options: ["Principle of Maximum Availability", "Principle of Least Privilege", "Root Access Principle", "Zero Latency Policy"],
+        correctAnswer: 1
+      },
+      {
+        question: "Which tool is commonly used to monitor container metrics, memory, and CPU alerts in cloud native stacks?",
+        options: ["Prometheus & Grafana", "WordPress", "FileZilla", "Vite"],
+        correctAnswer: 0
+      },
+      {
+        question: "What is the primary difference between a StatefulSet and a Deployment in Kubernetes?",
+        options: ["StatefulSets provide unique, persistent network identifiers and ordered storage for databases", "Deployments cannot run web servers", "StatefulSets cannot be scaled", "There is no difference"],
+        correctAnswer: 0
+      },
+      {
+        question: "What is a Reverse Proxy commonly used for in modern web architectures?",
+        options: ["Compiling TypeScript code", "Load balancing, SSL termination, and caching incoming client traffic (e.g. NGINX)", "Editing database tables", "Running unit tests"],
+        correctAnswer: 1
+      },
+      {
+        question: "Which Git branching strategy is characterized by short-lived feature branches merged frequently into the main trunk?",
+        options: ["Trunk-Based Development", "Waterfall Branching", "Subversion Locking", "Deadlock Branching"],
+        correctAnswer: 0
+      }
+    ]
+  },
+  {
+    id: 'cyber-1101',
+    title: "Cybersecurity & Ethical Defense",
+    description: "Security Certification: Network Vulnerability Scanning, OWASP Top 10, Penetration Testing Basics, Cryptography, and Zero-Trust Architecture.",
+    image: "https://images.unsplash.com/photo-1563986768609-322da13575f3?w=800&auto=format&fit=crop&q=60",
+    duration: "6 Hours",
+    difficulty: "Intermediate",
+    domain: "Cybersecurity",
+    category: "Technical",
+    points: 1300,
+    theoryPages: [],
+    passingScore: 12,
+    quiz: Array.from({ length: 15 }, (_, i) => ({
+      question: [
+        "What is the primary countermeasure against Cross-Site Scripting (XSS) vulnerabilities in web applications?",
+        "Which cryptographic algorithm is asymmetric (public-private key pair)?",
+        "What does the principle of Zero Trust Security mandate?",
+        "What type of attack involves overwhelming a network server with spoofed traffic until it crashes?",
+        "In OWASP Top 10, what does Broken Access Control refer to?",
+        "What is the difference between Hashing and Encryption?",
+        "Which protocol provides secure encrypted terminal communication over an insecure network?",
+        "What is a Man-in-the-Middle (MITM) attack?",
+        "What is the primary function of a Web Application Firewall (WAF)?",
+        "What is Phishing?",
+        "What does Multi-Factor Authentication (MFA) enforce?",
+        "Which HTTP header helps protect against clickjacking by preventing iframing?",
+        "What is a SQL Injection (SQLi) vulnerability?",
+        "What is Salting in password storage?",
+        "What is Penetration Testing (Ethical Hacking)?"
+      ][i],
+      options: [
+        ["Context-aware output encoding and Content Security Policy (CSP)", "Disabling HTTPS", "Using plain cookies", "Storing passwords in local storage"],
+        ["AES-256", "RSA", "DES", "Blowfish"],
+        ["Never trust, always verify every access request regardless of origin", "Trust everyone inside the office LAN", "Disable passwords", "Allow all API calls"],
+        ["Distributed Denial of Service (DDoS)", "SQL Injection", "Buffer Overflow", "Phishing"],
+        ["Users acting outside their intended permissions (e.g. user viewing admin data)", "Server overheating", "Syntax errors", "Slow internet connection"],
+        ["Hashing is a one-way mathematical function; encryption is reversible with a key", "Hashing requires a secret key to decode", "They are identical", "Encryption cannot be decrypted"],
+        ["Telnet", "SSH (Secure Shell)", "FTP", "HTTP"],
+        ["An attacker intercepting and potentially altering communication between two parties", "A hardware failure", "A monitor glitch", "A compiler crash"],
+        ["Filter and monitor HTTP traffic between web application and the Internet", "Compile JavaScript", "Format SSD drives", "Speed up CPU clock"],
+        ["Social engineering attack designed to deceive users into disclosing sensitive credentials", "Installing RAM", "Testing software", "Writing documentation"],
+        ["Requiring two or more distinct verification factors before granting account access", "Asking password twice", "Using capital letters only", "Disabling login on weekends"],
+        ["X-Frame-Options: DENY", "Content-Type: text/html", "Server: Apache", "Accept: text/plain"],
+        ["Flaw where untrusted user input alters backend database queries", "A slow hard drive", "A broken CSS style", "An expired domain name"],
+        ["Adding unique random string data to passwords before hashing to defeat rainbow table attacks", "Encrypting database twice", "Deleting weak passwords", "Displaying passwords in clear text"],
+        ["Authorized simulated cyberattack on computer system to evaluate its security", "Hacking for ransom", "Writing malicious code", "Formatting servers without permission"]
+      ][i],
+      correctAnswer: [0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0][i]
+    }))
+  },
+  {
+    id: 'uiux-2001',
+    title: "UI/UX Design & Design Systems (Figma)",
+    description: "Design Certification: User Research, Wireframing, Auto Layout & Components in Figma, Usability Testing, and WCAG Accessibility Standards.",
+    image: "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=800&auto=format&fit=crop&q=60",
+    duration: "6 Hours",
+    difficulty: "Intermediate",
+    domain: "Design",
+    category: "Non-Technical",
+    points: 1250,
+    theoryPages: [],
+    passingScore: 12,
+    quiz: Array.from({ length: 15 }, (_, i) => ({
+      question: [
+        "What is the primary difference between UI (User Interface) and UX (User Experience)?",
+        "In Figma, what feature allows elements to adapt dynamically to their content size and screen dimensions?",
+        "What is the purpose of conducting User Research during the product discovery phase?",
+        "What does the 60-30-10 Rule in UI color theory recommend?",
+        "What does WCAG compliance ensure in digital product design?",
+        "What is a Design System?",
+        "In information architecture, what is a Wireframe?",
+        "What is Hick's Law in user experience psychology?",
+        "What is a Micro-interaction in UI design?",
+        "What is the main objective of A/B Testing in product design?",
+        "In typography, what is Leading (line-height)?",
+        "What is an Empathy Map used for in Design Thinking?",
+        "What is Responsive Design?",
+        "What is the purpose of Usability Testing?",
+        "What is Fitts's Law in interaction design?"
+      ][i],
+      options: [
+        ["UI focuses on visual elements & aesthetics; UX focuses on user journey, usability & problem-solving", "UI is for mobile only; UX is for desktop only", "They are identical terms", "UI is backend coding; UX is sales"],
+        ["Auto Layout", "Pen Tool", "Boolean Union", "Export to PDF"],
+        ["Understand real user pain points, behaviors, and motivations before building", "Decide software pricing", "Choose hosting providers", "Write database schemas"],
+        ["60% dominant color, 30% secondary color, 10% accent color", "60% font size, 30% margin, 10% padding", "60% images, 30% text, 10% icons", "Use 10 colors equally"],
+        ["Accessibility for users with visual, auditory, motor, or cognitive disabilities", "Faster CPU performance", "Higher Google ranking only", "Cheaper font licensing"],
+        ["A single source of truth containing reusable UI components, tokens, and style guidelines", "A folder of random screenshots", "A software license", "A database table"],
+        ["A low-fidelity visual schematic representing page structure and content hierarchy", "A final code build", "A marketing banner", "An invoices spreadsheet"],
+        ["The time it takes to make a decision increases with the number and complexity of choices", "Users read every word on a webpage", "Larger buttons are always cheaper", "More colors improve speed"],
+        ["Subtle visual animations and feedback that communicate state changes to the user (e.g. button hover, switch toggle)", "A small bug", "A slow network request", "A short error message"],
+        ["Comparing two variants (A vs B) of a design with real users to measure conversion and performance metrics", "Testing software on two monitors", "Writing code in two languages", "Checking grammar"],
+        ["Vertical space between lines of text", "Space between individual letters (tracking)", "Font weight", "Font color"],
+        ["Synthesizing what a target persona Says, Thinks, Does, and Feels", "Drawing app wireframes", "Calculating revenue", "Listing competitor features"],
+        ["Designing layouts that seamlessly adjust and optimize across smartphones, tablets, and desktops", "Designing for dark mode only", "Writing fast server code", "Using static pixel dimensions"],
+        ["Observing representative users interacting with a prototype to identify usability bottlenecks and friction", "Testing server memory limits", "Testing battery consumption", "Proofreading code comments"],
+        ["The time required to rapidly move to a target area is a function of the target distance and target size", "Buttons should always be invisible", "Text must always be italicized", "Scroll speed must be constant"]
+      ][i],
+      correctAnswer: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0][i]
+    }))
+  },
+  {
+    id: 'pm-2101',
+    title: "Product Management & Agile Strategy",
+    description: "Management Certification: Product Discovery, User Personas, PRD Drafting, OKRs & KPIs, Scrum/Kanban, and Go-to-Market (GTM) Execution.",
+    image: "https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=800&auto=format&fit=crop&q=60",
+    duration: "5 Hours",
+    difficulty: "Intermediate",
+    domain: "Product Management",
+    category: "Non-Technical",
+    points: 1200,
+    theoryPages: [],
+    passingScore: 12,
+    quiz: Array.from({ length: 15 }, (_, i) => ({
+      question: [
+        "What is the primary role of a Product Manager (PM) in a tech organization?",
+        "What does an MVP (Minimum Viable Product) represent in Lean Product Development?",
+        "In Agile Scrum methodology, what is a Sprint?",
+        "What is a PRD (Product Requirement Document)?",
+        "What does the North Star Metric represent for a digital product?",
+        "What is the difference between Scrum and Kanban?",
+        "In product prioritization, what does the RICE framework evaluate?",
+        "What is Product-Market Fit (PMF)?",
+        "What is the primary purpose of a User Story in Agile?",
+        "What does Churn Rate measure in SaaS business metrics?",
+        "In OKRs (Objectives and Key Results), what should Key Results always be?",
+        "What is a Go-to-Market (GTM) Strategy?",
+        "What does Customer Acquisition Cost (CAC) vs Lifetime Value (LTV) indicate?",
+        "What is the MoSCoW prioritization technique?",
+        "What is a Retrospective meeting in Scrum?"
+      ][i],
+      options: [
+        ["Connecting customer needs, business goals, and engineering execution to deliver value", "Writing all backend code", "Managing server infrastructure", "Selling software licenses door to door"],
+        ["Earliest version of a product with just enough core features to validate learning with early adopters", "A product with zero features", "The final version released after 5 years", "An internal marketing deck"],
+        ["A time-boxed iteration (usually 1-4 weeks) where a development team produces a potentially releasable increment", "A marathon running competition", "An emergency server reboot", "A sales presentation"],
+        ["Comprehensive document outlining product purpose, user persona, feature specs, and success metrics", "An invoice bill", "A source code repository", "An HR contract"],
+        ["The single key metric that best captures the core value your product delivers to customers", "Total office square footage", "The company stock price today", "Number of employees hired"],
+        ["Scrum uses fixed-length sprints and predefined roles; Kanban is continuous flow based on work-in-progress (WIP) limits", "Scrum is for sales; Kanban is for coding", "Kanban requires daily sprints", "They are identical frameworks"],
+        ["Reach, Impact, Confidence, and Effort", "Revenue, Income, Cash, Expense", "Readiness, Identity, Culture, Ethics", "Reviews, Installs, Clicks, Engagement"],
+        ["When a product satisfies strong market demand and customers actively buy, use, and recommend it", "When marketing budget is spent", "When code compiles without errors", "When a logo is designed"],
+        ["Short, simple description of a feature told from the perspective of the end user (As a [user], I want [goal] so that [benefit])", "A fictional bedtime story", "A legal terms document", "A database query"],
+        ["The percentage of customers who stop subscribing or using your product over a specific period", "Website page loading time", "Number of passwords reset", "Total server memory used"],
+        ["Measurable, time-bound outcomes that track progress towards the objective", "Vague wishes without numbers", "Opinions from competitors", "Static rules that never change"],
+        ["An action plan that specifies how a company will reach target customers and achieve competitive advantage when launching", "A code deployment script", "An office relocation plan", "A tax filing procedure"],
+        ["Healthy business unit economics (LTV should be significantly higher than CAC, e.g. 3:1)", "Company is losing money on every customer", "CAC must always equal zero", "LTV has no impact on growth"],
+        ["Categorizing features into Must-have, Should-have, Could-have, and Won't-have", "A city in Russia", "A programming compiler", "A hardware standard"],
+        ["A meeting held at the end of a sprint for the team to inspect what went well, what didn't, and commit to improvements", "A salary negotiation meeting", "An interview test", "A customer sales pitch"]
+      ][i],
+      correctAnswer: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0][i]
+    }))
+  },
+  {
+    id: 'mkt-2201',
+    title: "Digital Marketing & Growth Hacking",
+    description: "Marketing Certification: Search Engine Optimization (SEO), Performance Marketing (Google/Meta Ads), Conversion Funnels, and Viral Loops.",
+    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=60",
+    duration: "5 Hours",
+    difficulty: "Beginner",
+    domain: "Marketing",
+    category: "Non-Technical",
+    points: 1100,
+    theoryPages: [],
+    passingScore: 12,
+    quiz: Array.from({ length: 15 }, (_, i) => ({
+      question: [
+        "What is the core difference between Organic SEO and Pay-Per-Click (PPC) advertising?",
+        "In Google Search Optimization, what is a Backlink and why is it important?",
+        "What does the AARRR (Pirate Metrics) framework stand for in Growth Hacking?",
+        "What does CTR (Click-Through Rate) calculate?",
+        "What is a Conversion Funnel in digital commerce?",
+        "What is On-Page SEO?",
+        "In email marketing, what is A/B Testing subject lines used for?",
+        "What does ROAS (Return on Ad Spend) evaluate?",
+        "What is a Viral Loop in product-led growth?",
+        "What is Content Marketing?",
+        "What does Remarketing / Retargeting achieve in ad campaigns?",
+        "What is the function of Google Analytics 4 (GA4)?",
+        "What is a Landing Page optimized for?",
+        "What is Influencer Marketing?",
+        "What is Customer Lifetime Value (CLV) in growth marketing?"
+      ][i],
+      options: [
+        ["SEO drives unpaid traffic through content and search rankings; PPC pays for targeted ad placements", "SEO is paid; PPC is free", "They are identical channels", "SEO is only for mobile apps"],
+        ["A link from an external website pointing to your site, serving as a vote of authority for search engine algorithms", "A broken link on a page", "An internal navigation menu", "A social media hashtag"],
+        ["Acquisition, Activation, Retention, Referral, Revenue", "Audience, Ads, Results, Reports, Revenue", "Awareness, Action, Reach, Rate, Return", "Accounts, Assets, Rules, Roles, Reviews"],
+        ["The percentage of people who click on a link/ad out of total people who viewed it (Clicks / Impressions * 100)", "Total money spent on ads", "Number of refunds processed", "Website bounce rate"],
+        ["The step-by-step path a prospect navigates from discovering a brand to completing a desired purchase", "A physical pipeline", "A server cooling filter", "An email inbox folder"],
+        ["Optimizing elements directly on the website (title tags, headers, content quality, page speed) for search engines", "Buying banner ads", "Running offline TV commercials", "Cold calling customers"],
+        ["Measuring which subject line generates a higher email Open Rate with a test audience", "Checking spelling only", "Sending emails twice", "Deleting unsubscribed users"],
+        ["Revenue generated directly per dollar invested in advertising campaigns", "Total clicks received", "Website hosting bill", "Brand logo recognition"],
+        ["A mechanism where each new user naturally introduces or invites one or more additional users during normal usage", "A computer virus", "An infinite server loop", "A broken database trigger"],
+        ["Creating and distributing valuable, relevant content to attract and engage a clearly defined target audience", "Spamming forums with links", "Writing code comments", "Cold email mass outreach"],
+        ["Serving tailored ads specifically to users who previously visited your website but did not convert", "Showing ads to random people", "Blocking spam bots", "Deleting cookies"],
+        ["Tracking user behavior, event conversions, engagement sessions, and audience demographics across platforms", "Sending bulk emails", "Editing video files", "Designing website logos"],
+        ["Driving visitors toward a single, focused Call-to-Action (CTA) without distracting navigation", "Showing all 50 company products", "Displaying legal terms", "Writing long blog articles"],
+        ["Partnering with niche content creators who possess credibility and audience trust to promote your brand", "Hiring actors for TV only", "Buying fake followers", "Running billboard ads"],
+        ["The total revenue a business can reasonably expect from a single customer throughout their relationship", "Cost of a single purchase", "Annual marketing budget", "Average monthly website visitors"]
+      ][i],
+      correctAnswer: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0][i]
+    }))
+  },
+  {
+    id: 'biz-2301',
+    title: "Business Analytics & Power BI",
+    description: "Analytics Certification: Data Modeling, DAX Expressions, Interactive Executive Dashboards, KPI Tracking, and Exploratory Data Analysis.",
+    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=60",
+    duration: "6 Hours",
+    difficulty: "Intermediate",
+    domain: "Business Analytics",
+    category: "Non-Technical",
+    points: 1250,
+    theoryPages: [],
+    passingScore: 12,
+    quiz: Array.from({ length: 15 }, (_, i) => ({
+      question: [
+        "In Microsoft Power BI, what is DAX (Data Analysis Expressions)?",
+        "What is the difference between a Calculated Column and a Measure in Power BI?",
+        "In data modeling, what is a Star Schema?",
+        "What is the primary function of Power Query in the Power BI workflow?",
+        "What does an Executive Dashboard aim to provide to decision-makers?",
+        "What is a Fact Table in a data warehouse?",
+        "What is a Dimension Table?",
+        "What does a Slicer do in a Power BI report?",
+        "What is the difference between Descriptive and Predictive Analytics?",
+        "In Excel / Power BI, what is VLOOKUP / XLOOKUP used for?",
+        "What is an Outlier in a business dataset?",
+        "What does KPI stand for in business operations?",
+        "In data cleaning, how should missing values (NULLs) be handled based on business context?",
+        "What is Data Storytelling?",
+        "What is a Drill-Down action in interactive business intelligence reports?"
+      ][i],
+      options: [
+        ["Formula language used to create custom calculations, aggregations, and measures", "A programming language like C++", "A hardware connection cable", "A database server operating system"],
+        ["Measures calculate dynamically on aggregated data in context; calculated columns evaluate row-by-row and consume memory", "Measures can only be numbers; columns can only be text", "They are identical", "Measures cannot be used in charts"],
+        ["Multi-dimensional model where a central fact table connects directly to surrounding dimension tables", "A database with star symbols", "A single flat text file", "An unindexed messy spreadsheet"],
+        ["Extract, transform, clean, and reshape raw data before loading it into the data model (ETL)", "Drawing pie charts", "Sending email alerts", "Managing user passwords"],
+        ["High-level, real-time visual summaries of critical business metrics and trends at a glance", "Detailed raw database logs with millions of rows", "Source code repositories", "An HR attendance sheet"],
+        ["Table containing quantitative measurements, transactional metrics, and foreign keys (e.g. sales amounts, units sold)", "Table with user biographies", "Table of company logos", "A backup snapshot file"],
+        ["Table containing contextual descriptive attributes used to filter and group fact data (e.g. customer name, product category, date)", "A table of numbers only", "A system log", "A temporary trigger"],
+        ["An on-canvas interactive visual filter that allows report users to filter data across all visualizations on the page", "A tool to delete rows", "A chart animation speed dial", "A database repair script"],
+        ["Descriptive analytics analyzes what happened in the past; predictive analytics forecasts what is likely to happen in the future", "They both only predict the future", "Descriptive is for coding; predictive is for marketing", "There is no difference"],
+        ["Searching for a value in a table and retrieving a corresponding value from another column", "Drawing line charts", "Encrypting passwords", "Splitting text by comma"],
+        ["A data point that differs significantly from other observations in the same sample", "The average value", "A missing value", "A normal daily transaction"],
+        ["Key Performance Indicator", "Knowledge Program Interface", "Kernel Process Identifier", "Key Production Index"],
+        ["Imputing (mean/median/mode), flagging, or removing rows thoughtfully based on domain impact", "Deleting all columns immediately", "Replacing all with zero blindly", "Ignoring without analysis"],
+        ["Translating complex data insights into actionable business narratives with compelling visualizations", "Writing fictional novels about data", "Reading spreadsheets aloud", "Printing charts on paper"],
+        ["Navigating from a high-level summary view into deeper granular levels of data (e.g. Year -> Quarter -> Month)", "Deleting old data", "Refreshing the database", "Exporting report to PDF"]
+      ][i],
+      correctAnswer: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0][i]
+    }))
   }
 ];
 

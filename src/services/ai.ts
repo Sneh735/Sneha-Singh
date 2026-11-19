@@ -1,4 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
+import { Course } from "../types";
 
 const getAI = () => {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -291,5 +292,110 @@ Provide a concise, encouraging, and actionable answer (under 120 words). You can
   } catch (err: any) {
     console.warn("Virtual Career Assistant fallback triggered:", err);
     throw err;
+  }
+};
+
+function generateFallbackCourseQuiz(topic: string) {
+  return Array.from({ length: 15 }, (_, i) => ({
+    question: `Assessment Question ${i + 1}: What is a foundational best practice when applying ${topic} in production environments?`,
+    options: [
+      `Adhering to deterministic industry standards and clean architecture principles for ${topic}`,
+      "Ignoring security, performance, and accessibility guidelines",
+      "Writing unmaintainable code without automated tests",
+      "Hardcoding secrets and configuration parameters"
+    ],
+    correctAnswer: 0
+  }));
+}
+
+export const generateCustomCourse = async (
+  topic: string,
+  category: 'Technical' | 'Non-Technical' = 'Technical',
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced' = 'Intermediate'
+): Promise<Course> => {
+  const cleanId = `ai-${topic.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${Date.now().toString().slice(-4)}`;
+  try {
+    const ai = getAI();
+    return await callWithModelFallback(async (modelName) => {
+      const response = await ai.models.generateContent({
+        model: modelName,
+        contents: `Generate a structured, professional curriculum for the course topic: "${topic}".
+Category: ${category}
+Difficulty: ${difficulty}
+
+Output a single JSON object with:
+- title: string
+- description: string (2-3 sentences explaining practical value, industry standards, and skills gained)
+- duration: string (e.g. "6 Hours" or "8 Hours")
+- domain: string (e.g. "${category === 'Technical' ? 'Software Engineering' : 'Business Management'}")
+- points: number (between 1100 and 1500)
+- quiz: array of exactly 15 high-quality, practical multiple choice questions. Each item must have:
+  - question: string
+  - options: array of 4 string choices
+  - correctAnswer: number (0, 1, 2, or 3)`,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              title: { type: Type.STRING },
+              description: { type: Type.STRING },
+              duration: { type: Type.STRING },
+              domain: { type: Type.STRING },
+              points: { type: Type.NUMBER },
+              quiz: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    question: { type: Type.STRING },
+                    options: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    correctAnswer: { type: Type.NUMBER }
+                  },
+                  required: ["question", "options", "correctAnswer"]
+                }
+              }
+            },
+            required: ["title", "description", "duration", "domain", "points", "quiz"]
+          }
+        }
+      });
+
+      const parsed = JSON.parse(response.text || "{}");
+      return {
+        id: cleanId,
+        title: parsed.title || `${topic} Mastery`,
+        description: parsed.description || `Comprehensive professional course on ${topic}.`,
+        image: category === 'Non-Technical' 
+          ? "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&auto=format&fit=crop&q=60"
+          : "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&auto=format&fit=crop&q=60",
+        duration: parsed.duration || "6 Hours",
+        difficulty,
+        domain: parsed.domain || (category === 'Non-Technical' ? 'Business & Strategy' : 'Engineering'),
+        category,
+        points: parsed.points || 1200,
+        theoryPages: [],
+        quiz: parsed.quiz && parsed.quiz.length >= 5 ? parsed.quiz : generateFallbackCourseQuiz(topic),
+        passingScore: 12
+      };
+    });
+  } catch (err) {
+    console.warn("AI Course Generation fallback activated:", err);
+    return {
+      id: cleanId,
+      title: `${topic} Professional Program`,
+      description: `Industry-standard mastery curriculum covering key principles, modern methodologies, and assessment for ${topic}.`,
+      image: category === 'Non-Technical' 
+        ? "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&auto=format&fit=crop&q=60"
+        : "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&auto=format&fit=crop&q=60",
+      duration: "6 Hours",
+      difficulty,
+      domain: category === 'Non-Technical' ? 'Management & Design' : 'Technical Systems',
+      category,
+      points: 1200,
+      theoryPages: [],
+      quiz: generateFallbackCourseQuiz(topic),
+      passingScore: 12
+    };
   }
 };

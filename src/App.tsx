@@ -26,7 +26,7 @@ import { CourseCard } from './components/CourseCard';
 import ProfileEditor from './components/ProfileEditor';
 import CourseContent from './components/CourseContent';
 import { ResumeAnalysis } from './services/ai';
-import { Course } from './types';
+import { Course, UserRole } from './types';
 import { cn, getAvatarUrl } from './lib/utils';
 import firebaseConfigData from '../firebase-applet-config.json';
 import { 
@@ -35,21 +35,22 @@ import {
   Search, 
   LogOut, 
   User as UserIcon, 
-  Sparkles,
-  Trophy,
-  Github,
-  Mail,
-  Linkedin,
-  BookOpen,
-  Bell,
-  Settings,
-  ChevronRight,
-  CheckCircle,
-  Clock,
-  Map,
-  MessageSquare,
-  FileText,
-  Briefcase
+  Sparkles, 
+  Trophy, 
+  Github, 
+  Mail, 
+  Linkedin, 
+  BookOpen, 
+  Bell, 
+  Settings, 
+  ChevronRight, 
+  CheckCircle, 
+  Clock, 
+  Map, 
+  MessageSquare, 
+  FileText, 
+  Briefcase,
+  Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ResumeScoreChart from './components/ResumeScoreChart';
@@ -59,12 +60,15 @@ import MockInterview from './components/MockInterview';
 import ResumeBuilder from './components/ResumeBuilder';
 import JobMatching from './components/JobMatching';
 import VirtualCareerAssistant from './components/VirtualCareerAssistant';
+import Career2SkillDashboard from './components/Career2SkillDashboard';
+import CourseCatalogSection from './components/CourseCatalogSection';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'home' | 'login' | 'register'>('home');
-  const [dashboardTab, setDashboardTab] = useState<'overview' | 'profile' | 'my_courses' | 'path' | 'interview' | 'resume' | 'builder' | 'job_match'>('overview');
+  const [userRole, setUserRole] = useState<UserRole>('student');
+  const [dashboardTab, setDashboardTab] = useState<'overview' | 'profile' | 'my_courses' | 'path' | 'interview' | 'resume' | 'builder' | 'job_match' | 'career2skill'>('overview');
   const [analysis, setAnalysis] = useState<ResumeAnalysis | null>(null);
   const [completedCourses, setCompletedCourses] = useState<string[]>([]);
   const [enrollments, setEnrollments] = useState<Record<string, { progress: number, status: string }>>({});
@@ -89,9 +93,13 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [searchResults, setSearchResults] = useState<Course[]>([]);
-  const [dbCourses, setDbCourses] = useState<Course[]>([]);
+  const [dbCourses, setDbCourses] = useState<Course[]>(COURSES);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
+
+  const handleAddCustomCourse = (newCourse: Course) => {
+    setDbCourses(prev => [newCourse, ...prev.filter(c => c.id !== newCourse.id)]);
+  };
 
   // Fetch courses from DB
   useEffect(() => {
@@ -184,12 +192,19 @@ export default function App() {
             const data = profileSnap.data();
             setCompletedCourses(data.completedCourses || []);
             setUserProfile(data);
+            if (data.role) {
+              setUserRole(data.role);
+              if (data.role === 'employee') {
+                setDashboardTab('career2skill');
+              }
+            }
           } else {
             console.log("No profile found, creating default for:", u.uid);
             const newUser = {
               uid: u.uid,
               email: u.email || "",
-              displayName: u.displayName || "Learner",
+              displayName: u.displayName || (userRole === 'employee' ? "Recruiter / Employee" : "Learner"),
+              role: userRole,
               photoURL: u.photoURL || "",
               linkedin: '',
               github: '',
@@ -256,7 +271,17 @@ export default function App() {
       if (type === 'register') {
         const userCredential = await createUserWithEmailAndPassword(auth, authEmail, authPassword);
         await updateProfile(userCredential.user, { displayName: authName });
-        // The onAuthStateChanged listener will handle creating the Firestore document
+        await setDoc(doc(db, "users", userCredential.user.uid), {
+          uid: userCredential.user.uid,
+          email: authEmail,
+          displayName: authName,
+          role: userRole,
+          photoURL: "",
+          keySkills: [],
+          completedCourses: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
       } else {
         await signInWithEmailAndPassword(auth, authEmail, authPassword);
       }
@@ -462,34 +487,52 @@ export default function App() {
       <aside className="w-72 bg-white border-r border-brand-border flex flex-col h-screen sticky top-0 hidden lg:flex">
         <div className="p-8 flex items-center gap-4">
           <div className="w-12 h-12 bg-brand-blue rounded-2xl flex items-center justify-center shadow-xl shadow-blue-200">
-            <GraduationCap className="w-6 h-6 text-white" />
+            {userRole === 'employee' ? <Briefcase className="w-6 h-6 text-white" /> : <GraduationCap className="w-6 h-6 text-white" />}
           </div>
-          <span className="font-display font-bold text-[24px] tracking-tight text-brand-blue-heading">SkillHire</span>
+          <div>
+            <span className="font-display font-bold text-[22px] tracking-tight text-brand-blue-heading block leading-tight">SkillHire</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md inline-block mt-0.5">
+              {userRole === 'employee' ? '💼 Employer Hub' : '🎓 Student Hub'}
+            </span>
+          </div>
         </div>
         
-        <nav className="flex-1 px-6 space-y-1.5 mt-4">
-          {[
+        <nav className="flex-1 px-6 space-y-1.5 mt-4 overflow-y-auto">
+          {(userRole === 'employee' ? [
+            { id: 'career2skill', icon: Briefcase, label: 'Career2skill (Jobs & PPO)' },
+            { id: 'job_match', icon: Users, label: 'Applicant Skill Match' },
+            { id: 'my_courses', icon: GraduationCap, label: 'Courses & AI Creator' },
+            { id: 'resume', icon: Search, label: 'Resume ATS Review' },
+            { id: 'overview', icon: LayoutDashboard, label: 'Learning Overview' },
+            { id: 'profile', icon: Settings, label: 'Company Settings' }
+          ] : [
             { id: 'overview', icon: LayoutDashboard, label: 'Dashboard Home' },
-            { id: 'my_courses', icon: GraduationCap, label: 'My Learning' },
+            { id: 'career2skill', icon: Sparkles, label: 'Career2skill (Fresher & PPO)' },
+            { id: 'my_courses', icon: GraduationCap, label: 'Courses & AI Academy' },
             { id: 'path', icon: Map, label: 'Career Roadmap' },
             { id: 'interview', icon: MessageSquare, label: 'Mock Interview' },
-            { id: 'job_match', icon: Briefcase, label: 'Job Matching' },
+            { id: 'job_match', icon: Users, label: 'Job Matching' },
             { id: 'resume', icon: Search, label: 'Resume Analysis' },
             { id: 'builder', icon: FileText, label: 'Resume Pro' },
             { id: 'profile', icon: Settings, label: 'Settings' }
-          ].map(item => (
+          ]).map(item => (
             <button 
               key={item.id}
               onClick={() => setDashboardTab(item.id as any)}
               className={cn(
                 "w-full flex items-center gap-4 px-4 py-3 rounded-xl font-semibold text-[14px] transition-all",
-                (dashboardTab === item.id || (item.id === 'overview' && dashboardTab === 'overview')) 
-                  ? "bg-brand-blue/10 text-brand-blue shadow-sm" 
+                (dashboardTab === item.id || (item.id === 'overview' && dashboardTab === 'overview' && userRole !== 'employee')) 
+                  ? "bg-brand-blue/10 text-brand-blue shadow-sm font-bold" 
                   : "text-brand-muted hover:bg-brand-blue/5 hover:text-brand-blue"
               )}
             >
               <item.icon className="w-4 h-4" />
-              {item.label}
+              <span>{item.label}</span>
+              {item.id === 'career2skill' && (
+                <span className="ml-auto text-[9px] font-black uppercase tracking-wider bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
+                  New
+                </span>
+              )}
             </button>
           ))}
         </nav>
@@ -505,7 +548,9 @@ export default function App() {
               />
               <div className="flex-1 overflow-hidden">
                 <p className="text-xs font-bold text-brand-blue-heading truncate">{user.displayName}</p>
-                <p className="text-[10px] font-bold text-brand-muted truncate">ID: {user.uid.slice(0, 8)}</p>
+                <p className="text-[10px] font-bold text-brand-muted truncate">
+                  {userRole === 'employee' ? '💼 Employee' : '🎓 Student'} · ID: {user.uid.slice(0, 6)}
+                </p>
               </div>
               <button onClick={logout} className="p-2 text-brand-muted hover:text-red-500 transition-colors">
                 <LogOut className="w-4 h-4" />
@@ -628,7 +673,9 @@ export default function App() {
             <button onClick={() => setDashboardTab('profile')} className="flex items-center gap-3 group">
               <div className="text-right hidden sm:block">
                 <p className="text-xs font-bold text-brand-blue-heading leading-none">{userProfile?.displayName || user.displayName}</p>
-                <p className="text-[10px] font-bold text-brand-muted uppercase tracking-widest mt-1">Student</p>
+                <p className="text-[10px] font-bold text-brand-muted uppercase tracking-widest mt-1">
+                  {userRole === 'employee' ? '💼 Employee / Recruiter' : '🎓 Student'}
+                </p>
               </div>
               <img 
                 src={getAvatarUrl(userProfile?.photoURL || user.photoURL, userProfile?.displayName || user.displayName)} 
@@ -702,46 +749,17 @@ export default function App() {
               </div>
             </div>
           ) : dashboardTab === 'my_courses' ? (
-            <div className="space-y-8">
-              <header>
-                <h1 className="text-[32px] font-display font-bold text-brand-blue-heading tracking-tight">Active Curriculum</h1>
-                <p className="text-brand-muted text-sm mt-1 font-medium">Tracking your path to mastery. Complete courses to earn verified certificates.</p>
-              </header>
-              
-              {Object.keys(enrollments).length === 0 ? (
-                <div className="bg-white p-20 rounded-[40px] border border-brand-border shadow-sm text-center space-y-6">
-                  <div className="w-20 h-20 bg-brand-cream rounded-full flex items-center justify-center mx-auto">
-                    <BookOpen className="w-10 h-10 text-brand-blue opacity-40" />
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="text-[20px] font-display font-bold text-brand-blue-heading">No Active Enrollments</h3>
-                    <p className="text-brand-muted max-w-sm mx-auto font-medium">You haven't added any skills to your methodology yet. Explore the catalog to begin.</p>
-                  </div>
-                  <button 
-                    onClick={() => setDashboardTab('overview')}
-                    className="px-8 py-4 bg-brand-blue text-white rounded-full font-black uppercase tracking-widest text-xs shadow-xl shadow-blue-100 hover:bg-brand-blue-dark transition-all active:scale-95"
-                  >
-                    Discover Courses
-                  </button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {COURSES.filter(c => enrollments[c.id]).map(course => (
-                    <CourseCard 
-                      key={course.id} 
-                      course={course} 
-                      isEnrolled={true}
-                      isCompleted={completedCourses.includes(course.id)}
-                      progress={enrollments[course.id]?.progress || 0}
-                      onEnroll={handleEnrollWithPin}
-                      onComplete={(id, s) => markCourseComplete(id, s || 100)}
-                      onView={(c) => setActiveCourse(c)}
-                      userName={user.displayName || "Learner"}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
+            <CourseCatalogSection 
+              courses={dbCourses}
+              enrollments={enrollments}
+              completedCourses={completedCourses}
+              onEnroll={handleEnrollWithPin}
+              onComplete={(id, s) => markCourseComplete(id, s || 100)}
+              onView={(c) => setActiveCourse(c)}
+              userName={user.displayName || "Learner"}
+              onAddCustomCourse={handleAddCustomCourse}
+              isEmployee={userRole === 'employee'}
+            />
           ) : dashboardTab === 'resume' ? (
             <div className="space-y-10 max-w-4xl">
               <header>
@@ -829,6 +847,15 @@ export default function App() {
               </header>
               <MockInterview />
             </div>
+          ) : dashboardTab === 'career2skill' ? (
+            <div className="space-y-8 max-w-7xl">
+              <Career2SkillDashboard 
+                currentUserProfile={userProfile}
+                userRole={userRole}
+                userEmail={user.email || ''}
+                userName={user.displayName || 'Learner'}
+              />
+            </div>
           ) : dashboardTab === 'job_match' ? (
             <div className="space-y-8 max-w-6xl">
               <JobMatching 
@@ -871,17 +898,20 @@ export default function App() {
 
               <section className="space-y-6">
                 <div className="flex justify-between items-end">
-                  <h2 className="text-[24px] font-display font-bold text-brand-blue-heading">Active Curriculum</h2>
+                  <div>
+                    <h2 className="text-[24px] font-display font-bold text-brand-blue-heading">Active Curriculum</h2>
+                    <p className="text-xs text-brand-muted mt-1 font-medium">Explore technical & non-technical skills, or synthesize custom courses with AI.</p>
+                  </div>
                   <button 
                     onClick={() => setDashboardTab('my_courses')}
                     className="text-[12px] font-bold uppercase tracking-widest text-brand-blue flex items-center gap-2 hover:opacity-70 transition-opacity"
                   >
-                    View Enrolled <ChevronRight className="w-3.5 h-3.5" />
+                    All Courses & AI Generator ({dbCourses.length}) <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {COURSES.map(course => (
+                  {dbCourses.slice(0, 6).map(course => (
                     <CourseCard 
                       key={course.id} 
                       course={course} 
@@ -939,7 +969,7 @@ export default function App() {
                   <div className="bg-brand-blue/5 p-4 rounded-2xl border border-brand-blue/10 transition-colors hover:bg-brand-blue/10">
                     <p className="text-[10px] font-bold uppercase tracking-widest text-brand-muted mb-1">Cred Points</p>
                     <p className="text-[24px] font-display font-bold text-brand-blue-heading">
-                      {completedCourses.reduce((acc, id) => acc + (COURSES.find(c => c.id === id)?.points || 0), 0)}
+                      {completedCourses.reduce((acc, id) => acc + ((dbCourses.find(c => c.id === id) || COURSES.find(c => c.id === id))?.points || 0), 0)}
                     </p>
                   </div>
                 </div>
@@ -954,7 +984,7 @@ export default function App() {
                   </div>
                   <div className="space-y-4">
                     {completedCourses.slice(0, 3).map(courseId => {
-                      const course = COURSES.find(c => c.id === courseId);
+                      const course = dbCourses.find(c => c.id === courseId) || COURSES.find(c => c.id === courseId);
                       return course ? (
                         <div key={courseId} className="flex items-center gap-3 p-3 bg-white/80 rounded-2xl border border-brand-border/50 group hover:border-brand-blue transition-colors cursor-pointer">
                           <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center">
@@ -1098,6 +1128,8 @@ export default function App() {
     <AuthPage 
       type="login" 
       setView={setView}
+      selectedRole={userRole}
+      setSelectedRole={setUserRole}
       authEmail={authEmail}
       setAuthEmail={setAuthEmail}
       authPassword={authPassword}
@@ -1115,6 +1147,8 @@ export default function App() {
     <AuthPage 
       type="register" 
       setView={setView}
+      selectedRole={userRole}
+      setSelectedRole={setUserRole}
       authEmail={authEmail}
       setAuthEmail={setAuthEmail}
       authPassword={authPassword}
