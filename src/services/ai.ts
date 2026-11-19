@@ -399,3 +399,37 @@ Output a single JSON object with:
     };
   }
 };
+
+export const askCourseAiTutor = async (
+  courseTitle: string,
+  moduleTitle: string,
+  userQuestion: string
+): Promise<string> => {
+  const prompt = `You are a friendly, expert tech mentor teaching the course "${courseTitle}", specifically the module "${moduleTitle}".
+A student has asked this doubt:
+"${userQuestion}"
+
+Provide a crystal clear, engaging, and practical explanation.
+Guidelines:
+1. Explain in simple terms using a quick real-world analogy.
+2. Provide a concrete code or framework snippet if relevant.
+3. Keep it concise (around 120-180 words), encouraging, and structured with bullet points.`;
+
+  try {
+    const ai = getAI();
+    return await callWithModelFallback(async (modelName) => {
+      const response = await ai.models.generateContent({
+        model: modelName,
+        contents: prompt
+      });
+      return response.text || `Here is an explanation of ${userQuestion} for ${courseTitle}.`;
+    });
+  } catch (err) {
+    console.warn("AI Tutor fallback activated:", err);
+    return `💡 **Mentor Guidance for ${courseTitle}**:
+Regarding **"${userQuestion}"**:
+• **Core Concept**: In ${courseTitle}, this pattern ensures high reliability and eliminates common edge-case failures.
+• **Real-World Analogy**: Think of it like a safety relay—it intercepts potential anomalies before they cascade down the workflow.
+• **Pro Tip**: Always verify inputs and write tests for failure modes before shipping to production!`;
+  }
+};

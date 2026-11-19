@@ -6,6 +6,17 @@ export interface QuizQuestion {
   correctAnswer: number;
 }
 
+export interface CourseModule {
+  id: string;
+  title: string;
+  duration: string;
+  summary: string;
+  content: string[];
+  codeSnippet?: string;
+  codeLanguage?: string;
+  keyTakeaways: string[];
+}
+
 export interface Course {
   id: string;
   title: string;
@@ -17,6 +28,8 @@ export interface Course {
   category?: 'Technical' | 'Non-Technical';
   points: number;
   theoryPages: string[];
+  modules?: CourseModule[];
+  videoUrl?: string;
   quiz: QuizQuestion[];
   passingScore: number;
 }
