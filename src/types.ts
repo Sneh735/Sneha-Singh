@@ -121,3 +121,86 @@ export interface FilterOptions {
   certificateOnly: boolean;
   minVacancies: number;
 }
+
+// --- Advanced AI-Powered Job Matching Types ---
+
+export interface AdvancedJobListing {
+  id: string;
+  title: string;
+  company: string;
+  logo: string;
+  location: string;
+  workMode: 'Remote' | 'Hybrid' | 'On-site';
+  salary: string;
+  experienceRequired: string;
+  minExperienceYears: number;
+  educationRequired: string;
+  employmentType: 'Full-time' | 'Internship with PPO' | 'Direct Placement';
+  domain: 'Frontend' | 'Backend' | 'Full Stack' | 'Cloud & DevOps' | 'AI & ML' | 'UI/UX Design' | 'Product Management' | 'Cybersecurity' | 'Business Analytics' | 'Database' | 'Digital Marketing';
+  requiredTechnicalSkills: string[];
+  requiredSoftSkills: string[];
+  preferredCertifications: string[];
+  description: string;
+  responsibilities: string[];
+  benefits: string[];
+  applicationDeadline: string;
+  postedDate: string;
+  vacancies?: number;
+}
+
+export interface CandidateProfile {
+  name: string;
+  email: string;
+  phone?: string;
+  targetRole: string;
+  technicalSkills: string[];
+  softSkills: string[];
+  experienceYears: number;
+  education: {
+    degree: string;
+    field: string;
+    college: string;
+    graduationYear: string;
+    gpa?: string;
+  };
+  workExperience?: {
+    role: string;
+    company: string;
+    duration: string;
+    description: string;
+  }[];
+  certifications?: string[];
+  preferredLocation: string;
+  preferredWorkMode: 'Any' | 'Remote' | 'Hybrid' | 'On-site';
+}
+
+export interface MatchBreakdown {
+  overallScore: number;
+  matchRating: 'Excellent Match' | 'Strong Match' | 'Good Match' | 'Low Match';
+  skillsScore: number; // Max 35
+  experienceScore: number; // Max 20
+  educationScore: number; // Max 15
+  roleAlignmentScore: number; // Max 15
+  locationScore: number; // Max 10
+  certificationsScore: number; // Max 5
+  matchedTechnicalSkills: string[];
+  missingTechnicalSkills: string[];
+  matchedSoftSkills: string[];
+  missingSoftSkills: string[];
+  experienceMatchStatus: string;
+  educationMatchStatus: string;
+  strengths: string[];
+  areasToImprove: string[];
+  recommendedCourseId?: string;
+  aiNarrative: string;
+}
+
+export interface JobApplicationRecord {
+  id: string;
+  jobId: string;
+  jobTitle: string;
+  company: string;
+  appliedDate: string;
+  matchScoreAtApply: number;
+  status: 'Submitted' | 'Under Review' | 'Shortlisted' | 'Assessment Scheduled';
+}

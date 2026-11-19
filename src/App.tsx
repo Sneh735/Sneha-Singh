@@ -857,11 +857,19 @@ export default function App() {
               />
             </div>
           ) : dashboardTab === 'job_match' ? (
-            <div className="space-y-8 max-w-6xl">
+            <div className="space-y-8 max-w-7xl">
               <JobMatching 
+                userProfile={userProfile}
+                onUpdateProfile={(updated) => {
+                  setUserProfile((prev: any) => ({ ...prev, ...updated }));
+                }}
                 userSkills={userProfile?.keySkills?.length ? userProfile.keySkills : (analysis?.keywordAnalysis?.foundKeywords || ['JavaScript', 'HTML', 'CSS', 'React', 'Java', 'SQL', 'Python'])} 
                 completedCourses={completedCourses}
                 onNavigateToCourse={() => setDashboardTab('my_courses')}
+                onViewCourse={(c) => setActiveCourse(c)}
+                courses={dbCourses}
+                userEmail={user.email || ''}
+                userName={userProfile?.displayName || user.displayName || 'Candidate'}
               />
             </div>
           ) : dashboardTab === 'builder' ? (
