@@ -62,6 +62,7 @@ import JobMatching from './components/JobMatching';
 import VirtualCareerAssistant from './components/VirtualCareerAssistant';
 import Career2SkillDashboard from './components/Career2SkillDashboard';
 import CourseCatalogSection from './components/CourseCatalogSection';
+import LandingPage from './components/LandingPage';
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -835,8 +836,11 @@ export default function App() {
                 <p className="text-brand-muted text-sm mt-1 font-medium">AI-driven learning paths tailored to your current skill topology and target roles.</p>
               </header>
               <CareerPath 
-                skills={analysis?.keywordAnalysis?.foundKeywords || []} 
-                currentDomain={'Web Development'} 
+                skills={userProfile?.keySkills?.length ? userProfile.keySkills : (analysis?.keywordAnalysis?.foundKeywords || ['JavaScript', 'React', 'HTML', 'CSS', 'SQL'])} 
+                currentDomain={'Full Stack Development'} 
+                userProfile={userProfile}
+                onUpdateProfile={(updated) => setUserProfile((prev: any) => ({ ...prev, ...updated }))}
+                onNavigateToCourse={() => setDashboardTab('my_courses')}
               />
             </div>
           ) : dashboardTab === 'interview' ? (
@@ -903,6 +907,107 @@ export default function App() {
                   )}
                 </div>
               </header>
+
+              {/* Quick Launch & Profile Health Banner */}
+              <div className="bg-gradient-to-br from-white via-white to-blue-50/40 p-6 sm:p-7 rounded-[28px] border border-brand-border/70 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div className="space-y-2 max-w-lg">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 bg-brand-blue/10 text-brand-blue rounded-md text-[11px] font-bold uppercase tracking-wider">
+                      Career Readiness Engine
+                    </span>
+                    <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                      {analysis ? 'ATS Scored' : 'Resume Needed'}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-display font-bold text-brand-blue-heading leading-tight">
+                    {userProfile?.headline || 'Accelerate Your Job Placement Trajectory'}
+                  </h3>
+                  <p className="text-xs text-brand-muted leading-relaxed font-medium">
+                    Complete milestone roadmaps, practice with adversarial AI interviewers, and get matched to high-compatibility engineering roles.
+                  </p>
+
+                  <div className="pt-2 flex flex-wrap gap-2">
+                    <button
+                      onClick={() => setDashboardTab('job_match')}
+                      className="px-3.5 py-1.5 bg-brand-blue text-white rounded-xl text-xs font-bold hover:bg-brand-blue-dark transition-all flex items-center gap-1.5 shadow-xs"
+                    >
+                      <Briefcase className="w-3.5 h-3.5" /> Job Matches (12+)
+                    </button>
+                    <button
+                      onClick={() => setDashboardTab('path')}
+                      className="px-3.5 py-1.5 bg-white text-brand-blue-heading border border-brand-border rounded-xl text-xs font-bold hover:border-brand-blue transition-all flex items-center gap-1.5"
+                    >
+                      <Map className="w-3.5 h-3.5 text-brand-blue" /> 10 Roadmaps
+                    </button>
+                    <button
+                      onClick={() => setDashboardTab('interview')}
+                      className="px-3.5 py-1.5 bg-white text-brand-blue-heading border border-brand-border rounded-xl text-xs font-bold hover:border-brand-blue transition-all flex items-center gap-1.5"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5 text-brand-blue" /> Voice Interview
+                    </button>
+                    <button
+                      onClick={() => setDashboardTab('career2skill')}
+                      className="px-3.5 py-1.5 bg-white text-brand-blue-heading border border-brand-border rounded-xl text-xs font-bold hover:border-brand-blue transition-all flex items-center gap-1.5"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-purple-600" /> Career2skill Portal
+                    </button>
+                  </div>
+                </div>
+
+                {/* Profile Completion Meter */}
+                <div className="bg-white p-4 sm:p-5 rounded-2xl border border-brand-border/80 shadow-xs flex items-center gap-4 shrink-0 min-w-[200px]">
+                  <div className="relative w-14 h-14 flex items-center justify-center shrink-0">
+                    <svg className="w-full h-full -rotate-90" viewBox="0 0 40 40">
+                      <circle cx="20" cy="20" r="16" stroke="#f1f5f9" strokeWidth="4" fill="none" />
+                      <circle 
+                        cx="20" 
+                        cy="20" 
+                        r="16" 
+                        stroke="#1a6ef5" 
+                        strokeWidth="4" 
+                        fill="none" 
+                        strokeDasharray="100.5" 
+                        strokeDashoffset={100.5 - (100.5 * Math.min(100, (
+                          (user.displayName ? 20 : 0) + 
+                          ((userProfile?.keySkills?.length || analysis?.keywordAnalysis?.foundKeywords?.length) ? 25 : 0) + 
+                          ((userProfile?.linkedin || userProfile?.github) ? 15 : 0) + 
+                          (analysis ? 20 : 0) + 
+                          (completedCourses.length > 0 ? 20 : 10)
+                        ))) / 100}
+                        strokeLinecap="round" 
+                        className="transition-all duration-700 ease-out" 
+                      />
+                    </svg>
+                    <span className="absolute text-xs font-bold text-brand-blue-heading">
+                      {Math.min(100, (
+                        (user.displayName ? 20 : 0) + 
+                        ((userProfile?.keySkills?.length || analysis?.keywordAnalysis?.foundKeywords?.length) ? 25 : 0) + 
+                        ((userProfile?.linkedin || userProfile?.github) ? 15 : 0) + 
+                        (analysis ? 20 : 0) + 
+                        (completedCourses.length > 0 ? 20 : 10)
+                      ))}%
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-brand-muted uppercase tracking-wider block">Profile Strength</span>
+                    <p className="text-xs font-bold text-brand-blue-heading">
+                      {Math.min(100, (
+                        (user.displayName ? 20 : 0) + 
+                        ((userProfile?.keySkills?.length || analysis?.keywordAnalysis?.foundKeywords?.length) ? 25 : 0) + 
+                        ((userProfile?.linkedin || userProfile?.github) ? 15 : 0) + 
+                        (analysis ? 20 : 0) + 
+                        (completedCourses.length > 0 ? 20 : 10)
+                      )) >= 80 ? 'All-Star Ready' : 'In Progress'}
+                    </p>
+                    <button
+                      onClick={() => setDashboardTab('profile')}
+                      className="text-[11px] text-brand-blue font-bold hover:underline mt-0.5 block"
+                    >
+                      Update Identity →
+                    </button>
+                  </div>
+                </div>
+              </div>
 
               <section className="space-y-6">
                 <div className="flex justify-between items-end">
@@ -1021,115 +1126,12 @@ export default function App() {
   </div>
 );
 
-  // Home Page
+  // Home Page - Premium SaaS Landing Page
   if (view === 'home') return (
-    <div className="min-h-screen bg-brand-cream font-sans selection:bg-brand-blue/30 overflow-x-hidden">
-      <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[90%] max-w-7xl flex justify-between items-center py-4 px-8 bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-[24px]">
-        <div className="flex items-center gap-3">
-          <img src="/logo.svg" alt="Skill to Hire Logo" className="w-9 h-9 rounded-xl shadow-md shadow-blue-200" />
-          <div className="font-display font-extrabold text-[24px] tracking-tight text-brand-blue-heading">
-            Skill<span className="text-brand-blue">toHire</span>
-          </div>
-        </div>
-        <div className="hidden md:flex items-center gap-8">
-          {['Features', 'Roadmap', 'Interviews', 'Success Stories'].map(item => (
-            <a key={item} href="#" className="font-semibold text-[15px] text-brand-ink/70 hover:text-brand-blue transition-colors">{item}</a>
-          ))}
-        </div>
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={() => setView('login')}
-            className="text-[15px] font-bold text-brand-blue-heading px-5 py-2 hover:bg-brand-blue/5 rounded-full transition-all"
-          >
-            Log In
-          </button>
-          <button 
-            onClick={() => setView('register')}
-            className="text-[15px] font-bold text-white bg-brand-blue px-6 py-2.5 rounded-full shadow-[0_10px_25px_-5px_rgba(26,110,245,0.4)] hover:shadow-[0_15px_30px_-5px_rgba(26,110,245,0.5)] hover:scale-[1.05] active:scale-[0.98] transition-all btn-premium"
-          >
-            Join Now
-          </button>
-        </div>
-      </nav>
-
-      <div className="relative pt-44 pb-32 px-8 flex flex-col items-center text-center overflow-hidden">
-        {/* Background Decorative Elements */}
-        <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-brand-blue/5 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-brand-blue/10 rounded-full blur-[100px] pointer-events-none" />
-        
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-brand-blue/5 text-brand-blue border border-brand-blue/10 rounded-full text-xs font-bold mb-8 shadow-sm"
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          The future of hiring is here
-        </motion.div>
-        
-        <motion.h1 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="font-display font-extrabold text-[clamp(40px,7vw,72px)] leading-[1.05] tracking-tight max-w-5xl text-brand-blue-heading"
-        >
-          Master Skills. <br />
-          Bridge the <span className="text-brand-blue relative">
-            Career Gap
-            <svg className="absolute -bottom-2 left-0 w-full h-3 text-brand-blue/20" viewBox="0 0 100 10" preserveAspectRatio="none">
-              <path d="M0 5 Q 25 0, 50 5 T 100 5" fill="none" stroke="currentColor" strokeWidth="4" />
-            </svg>
-          </span> with AI.
-        </motion.h1>
-
-        <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="mt-8 text-lg md:text-xl text-brand-muted max-w-2xl leading-relaxed font-medium"
-        >
-          The intelligent platform that maps your potential. Analyze resumes, follow custom roadmaps, and practice with state-of-the-art AI interviewers.
-        </motion.p>
-
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mt-12 flex gap-5 flex-wrap justify-center"
-        >
-          <button 
-            onClick={() => setView('register')}
-            className="px-10 py-5 bg-brand-blue text-white rounded-full font-bold text-lg shadow-[0_20px_40px_-10px_rgba(26,110,245,0.4)] hover:shadow-[0_25px_50px_-10px_rgba(26,110,245,0.5)] hover:scale-[1.05] active:scale-[0.98] transition-all btn-premium"
-          >
-            Start Your Journey →
-          </button>
-          <button 
-            onClick={() => setView('login')}
-            className="px-10 py-5 bg-white text-brand-ink border border-brand-border rounded-full font-bold text-lg hover:border-brand-blue hover:text-brand-blue transition-all active:scale-95"
-          >
-            Explore Courses
-          </button>
-        </motion.div>
-      </div>
-
-      <div className="bg-white/50 backdrop-blur-md border-y border-brand-border flex flex-wrap justify-center gap-16 py-20 px-10">
-        {[
-          { icon: <Search className="w-6 h-6" />, label: 'AI Resume Analysis', sub: 'Instant ATS feedback' },
-          { icon: <FileText className="w-6 h-6" />, label: 'Resume Pro', sub: 'Build professional resumes' },
-          { icon: <Map className="w-6 h-6" />, label: 'Guided Roadmaps', sub: 'Step-by-step mastery' },
-          { icon: <MessageSquare className="w-6 h-6" />, label: 'Mock Interviews', sub: 'Adversarial AI practice' }
-        ].map((feat, i) => (
-          <div key={i} className="flex items-center gap-5 group">
-            <div className="w-14 h-14 bg-white shadow-md rounded-2xl flex items-center justify-center text-brand-blue group-hover:bg-brand-blue group-hover:text-white transition-all duration-300">
-              {feat.icon}
-            </div>
-            <div className="flex flex-col text-left">
-              <span className="font-bold text-[18px] text-brand-blue-heading tracking-tight">{feat.label}</span>
-              <span className="text-sm text-brand-muted font-medium">{feat.sub}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
+    <LandingPage 
+      onLogin={() => setView('login')}
+      onRegister={() => setView('register')}
+    />
   );
 
   if (view === 'login') return (

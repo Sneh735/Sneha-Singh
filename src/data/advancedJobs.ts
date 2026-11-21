@@ -326,3 +326,5 @@ export const ADVANCED_JOBS_CATALOG: AdvancedJobListing[] = [
     vacancies: 4
   }
 ];
+
+export const ADVANCED_JOBS = ADVANCED_JOBS_CATALOG;
