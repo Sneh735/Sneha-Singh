@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import { UserRole } from '../types';
 import { cn } from '../lib/utils';
+import { auth } from '../lib/firebase';
+import { sendPasswordResetEmail } from 'firebase/auth';
 
 interface AuthPageProps {
   type: 'login' | 'register';
@@ -84,6 +86,8 @@ export default function AuthPage({
   const [recoveryError, setRecoveryError] = useState<string | null>(null);
   const [recoverySuccessMsg, setRecoverySuccessMsg] = useState<string | null>(null);
   const [maskedEmail, setMaskedEmail] = useState('');
+  const [devOtpHint, setDevOtpHint] = useState<string | null>(null);
+  const [isSendingFirebaseEmail, setIsSendingFirebaseEmail] = useState(false);
 
   // Load Remembered Email on Mount
   useEffect(() => {
@@ -162,6 +166,7 @@ export default function AuthPage({
       setOtpTimer(data.expiresInSeconds || 300);
       setResendCooldown(60);
       setOtpInput('');
+      setDevOtpHint(data.devOtp || null);
       setRecoverySuccessMsg(data.message || `OTP dispatched to ${targetEmail}`);
 
       // If development OTP provided, prefill/hint
@@ -172,6 +177,32 @@ export default function AuthPage({
       setRecoveryError(err.message || "Could not deliver OTP. Please check your email address.");
     } finally {
       setIsSendingOtp(false);
+    }
+  };
+
+  // Direct Firebase Email Reset Link
+  const handleSendFirebaseEmail = async () => {
+    const targetEmail = recoveryEmail.trim() || authEmail.trim();
+    if (!targetEmail || !targetEmail.includes('@')) {
+      setRecoveryError("Please enter a valid registered email address.");
+      return;
+    }
+    setIsSendingFirebaseEmail(true);
+    setRecoveryError(null);
+    try {
+      await sendPasswordResetEmail(auth, targetEmail);
+      setRecoverySuccessMsg(`Official Google Firebase password reset link sent to ${targetEmail}! Please check your inbox (or spam) to set a new password.`);
+    } catch (err: any) {
+      console.error("Firebase reset email error:", err);
+      if (err.code === 'auth/user-not-found') {
+        setRecoveryError("No user registered with this email. Please check spelling or register.");
+      } else if (err.code === 'auth/too-many-requests') {
+        setRecoveryError("Too many requests sent. Please try again after a few minutes.");
+      } else {
+        setRecoveryError(err.message || "Failed to send reset email link.");
+      }
+    } finally {
+      setIsSendingFirebaseEmail(false);
     }
   };
 
@@ -243,6 +274,8 @@ export default function AuthPage({
       }
 
       setRecoveryStep('success');
+      setAuthPassword(newPassword);
+      setAuthEmail(recoveryEmail.trim() || authEmail.trim());
     } catch (err: any) {
       setRecoveryError(err.message || "Password update failed. Please try again.");
     } finally {
@@ -548,6 +581,22 @@ export default function AuthPage({
                       {isSendingOtp ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                       <span>Send Recovery OTP Code</span>
                     </button>
+
+                    <div className="relative flex py-1 items-center">
+                      <div className="flex-grow border-t border-slate-200"></div>
+                      <span className="flex-shrink mx-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest">or</span>
+                      <div className="flex-grow border-t border-slate-200"></div>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={isSendingFirebaseEmail || !recoveryEmail.trim()}
+                      onClick={handleSendFirebaseEmail}
+                      className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 transition-all border border-slate-200 disabled:opacity-50"
+                    >
+                      {isSendingFirebaseEmail ? <Loader2 className="w-4 h-4 animate-spin text-brand-blue" /> : <Mail className="w-4 h-4 text-brand-blue" />}
+                      <span>Send Official Reset Link to Inbox</span>
+                    </button>
                   </form>
 
                   <div className="text-center">
@@ -593,6 +642,26 @@ export default function AuthPage({
                     <Clock className="w-4 h-4 text-brand-blue" />
                     <span>OTP Expires in: <span className="text-red-600 font-mono text-sm">{formatTimer(otpTimer)}</span></span>
                   </div>
+
+                  {/* Dev / Testing OTP Auto-Fill Banner */}
+                  {devOtpHint && (
+                    <div className="p-3.5 bg-blue-50/90 border border-blue-200 rounded-2xl flex items-center justify-between gap-3 text-xs">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-brand-blue shrink-0" />
+                        <div>
+                          <p className="font-bold text-slate-800 text-[11px]">Testing Verification Code:</p>
+                          <p className="font-mono font-bold text-brand-blue tracking-widest text-sm">{devOtpHint}</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setOtpInput(devOtpHint)}
+                        className="px-3 py-1.5 bg-brand-blue text-white rounded-xl font-bold text-[11px] hover:bg-brand-blue-dark transition-all shadow-xs shrink-0"
+                      >
+                        Auto-Fill
+                      </button>
+                    </div>
+                  )}
 
                   <form onSubmit={handleVerifyOtp} className="space-y-4">
                     <div className="space-y-1">
@@ -641,6 +710,18 @@ export default function AuthPage({
                       className="text-slate-500 hover:text-slate-800"
                     >
                       Change Email
+                    </button>
+                  </div>
+
+                  <div className="pt-2 text-center">
+                    <button
+                      type="button"
+                      disabled={isSendingFirebaseEmail}
+                      onClick={handleSendFirebaseEmail}
+                      className="text-xs font-bold text-brand-blue hover:underline flex items-center justify-center gap-1.5 mx-auto"
+                    >
+                      {isSendingFirebaseEmail ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />}
+                      <span>Didn't receive email? Send direct reset link to inbox</span>
                     </button>
                   </div>
                 </div>
